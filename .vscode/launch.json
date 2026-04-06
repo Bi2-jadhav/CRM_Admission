@@ -1,0 +1,42 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "ServiceRegistryServiceApplication",
+            "request": "launch",
+            "mainClass": "com.ServiceRegistryService.ServiceRegistryService.ServiceRegistryServiceApplication",
+            "projectName": "ServiceRegistryService"
+        },
+        {
+            "type": "java",
+            "name": "CounselorServiceApplication",
+            "request": "launch",
+            "mainClass": "com.counselorService.CounselorService.CounselorServiceApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
+            "name": "AuthServiceApplication",
+            "request": "launch",
+            "mainClass": "com.authService.authService.AuthServiceApplication",
+            "projectName": "authService"
+        },
+        {
+            "type": "java",
+            "name": "ApiGatewayServiceApplication",
+            "request": "launch",
+            "mainClass": "com.ApiGatewayRegistryService.ApiGatewayService.ApiGatewayServiceApplication",
+            "projectName": "ApiGatewayService"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-AdminServiceApplication<AdminService>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.adminService.AdminService.AdminServiceApplication",
+            "projectName": "AdminService",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

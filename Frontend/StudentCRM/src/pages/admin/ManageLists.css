@@ -1,0 +1,151 @@
+.manage-lists {
+  animation: fadeIn 0.3s ease;
+}
+
+.lists-container {
+  margin-top: 2rem;
+}
+
+.lists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.list-card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid var(--neutral-200);
+  transition: all 0.3s ease;
+}
+
+.list-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.list-header:hover {
+  background-color: var(--neutral-50);
+}
+
+.list-info h4 {
+  color: var(--neutral-900);
+  font-size: 1.15rem;
+  margin-bottom: 0.25rem;
+}
+
+.list-source {
+  color: var(--neutral-600);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.list-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 100px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--neutral-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.list-details {
+  padding: 1.5rem;
+  background-color: var(--neutral-50);
+  border-top: 1px solid var(--neutral-200);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--neutral-600);
+}
+
+.detail-value {
+  color: var(--neutral-900);
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--neutral-300);
+}
+
+.detail-actions button {
+  flex: 1;
+}
+
+.empty-state {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--neutral-600);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+  .lists-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .list-header {
+    flex-direction: column;
+  }
+
+  .list-stats {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+  }
+
+  .detail-actions button {
+    width: 100%;
+  }
+}

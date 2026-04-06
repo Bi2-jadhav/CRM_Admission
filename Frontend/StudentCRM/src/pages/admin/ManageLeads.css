@@ -1,0 +1,260 @@
+.manage-leads {
+  animation: fadeIn 0.3s ease;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.lead-form {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.lead-form h3 {
+  font-size: 1.25rem;
+  color: var(--neutral-900);
+  margin-bottom: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--neutral-700);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.75rem;
+  border: 1px solid var(--neutral-300);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-actions button {
+  flex: 1;
+}
+
+.leads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lead-card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid var(--neutral-200);
+  transition: all 0.3s ease;
+}
+
+.lead-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.lead-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.lead-header:hover {
+  background-color: var(--neutral-50);
+}
+
+.lead-info h4 {
+  color: var(--neutral-900);
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.lead-phone {
+  color: var(--neutral-600);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.lead-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badge-stage-new {
+  background-color: #eef;
+  color: var(--primary);
+}
+
+.badge-stage-called {
+  background-color: #fef0e6;
+  color: var(--warning);
+}
+
+.badge-stage-follow-up {
+  background-color: #fff0f0;
+  color: #dc2626;
+}
+
+.badge-stage-closed {
+  background-color: var(--neutral-200);
+  color: var(--neutral-600);
+}
+
+.badge-stage-converted {
+  background-color: #efe;
+  color: var(--secondary);
+}
+
+.badge-source-meta {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+}
+
+.badge-source-website {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.badge-source-google {
+  background-color: #fef2f0;
+  color: #ea580c;
+}
+
+.expand-icon {
+  transition: transform 0.3s ease;
+  color: var(--neutral-600);
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.lead-details {
+  padding: 1.5rem;
+  background-color: var(--neutral-50);
+  border-top: 1px solid var(--neutral-200);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--neutral-600);
+}
+
+.detail-value {
+  color: var(--neutral-900);
+  word-break: break-word;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--neutral-300);
+}
+
+.detail-actions button {
+  flex: 1;
+}
+
+.empty-state {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  color: var(--neutral-600);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions button,
+  .header-actions label {
+    width: 100%;
+  }
+
+  .lead-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .lead-badges {
+    width: 100%;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  .detail-actions button {
+    width: 100%;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
