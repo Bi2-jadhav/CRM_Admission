@@ -1,0 +1,15 @@
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\AdminServiceApplication.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Config\SecurityConfig.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Controller\CourseController.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Controller\EnquiryController.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Controller\LeadListController.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Controller\ReportController.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Entity\Course.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Entity\Enquiry.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Entity\LeadList.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Repository\CourseRepository.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Repository\EnquiryRepository.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Repository\LeadListRepository.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Service\CourseService.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Service\EnquiryService.java
+C:\Users\HP\Desktop\Internship\new folder\CRM_Admission\Backend\AdminService\src\main\java\com\adminService\AdminService\Service\LeadListService.java

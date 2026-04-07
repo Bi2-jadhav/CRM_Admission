@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useData } from '../../Components/context/DataContext'
-import { Plus, Edit2, Trash2, ChevronDown } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import './ManageLists.css'
 
 function ManageLists() {
 
-  // ✅ SAFE DESTRUCTURING (MOST IMPORTANT FIX)
   const {
     lists = [],
     addList,
@@ -24,6 +23,8 @@ function ManageLists() {
     status: 'active'
   })
 
+  const sources = ['Meta', 'Website', 'Google', 'Instagram', 'Walkin', 'Inbound']
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -35,17 +36,16 @@ function ManageLists() {
   const handleSubmit = (e) => {
     e.preventDefault()
 
+    const payload = {
+      ...formData,
+      createdDate: new Date().toISOString().split('T')[0]
+    }
+
     if (editingId) {
-      updateList(editingId, {
-        ...formData,
-        createdDate: new Date().toISOString().split('T')[0]
-      })
+      updateList(editingId, payload)
       setEditingId(null)
     } else {
-      addList({
-        ...formData,
-        createdDate: new Date().toISOString().split('T')[0]
-      })
+      addList(payload)
     }
 
     setFormData({ name: '', source: 'Meta', count: 0, status: 'active' })
@@ -64,7 +64,7 @@ function ManageLists() {
   }
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this list?')) {
+    if (window.confirm('Delete this list?')) {
       deleteList(id)
     }
   }
@@ -75,64 +75,140 @@ function ManageLists() {
     setFormData({ name: '', source: 'Meta', count: 0, status: 'active' })
   }
 
-  const sources = ['Meta', 'Website', 'Google', 'Instagram', 'Walkin', 'Inbound']
-
   return (
     <div className="manage-lists">
 
+      {/* HEADER */}
       <div className="page-header">
         <h2>Manage Lead Lists</h2>
 
         <button
-          className="btn btn-primary"
+          className="btn-primary"
           onClick={() => setShowForm(!showForm)}
         >
-          <Plus size={20} />
+          <Plus size={18} />
           {showForm ? 'Cancel' : 'Create List'}
         </button>
       </div>
 
+      {/* FORM */}
       {showForm && (
         <form onSubmit={handleSubmit} className="list-form">
-          <h3>{editingId ? 'Edit List' : 'Create New List'}</h3>
 
-          <input name="name" value={formData.name} onChange={handleInputChange} placeholder="List Name" />
-          
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            placeholder="List Name"
+            required
+          />
+
           <select name="source" value={formData.source} onChange={handleInputChange}>
             {sources.map(source => (
-              <option key={source} value={source}>{source}</option>
+              <option key={source}>{source}</option>
             ))}
           </select>
 
-          <input type="number" name="count" value={formData.count} onChange={handleInputChange} />
+          <input
+            type="number"
+            name="count"
+            value={formData.count}
+            onChange={handleInputChange}
+          />
 
           <select name="status" value={formData.status} onChange={handleInputChange}>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
 
-          <button type="submit">{editingId ? 'Update' : 'Create'}</button>
-          <button type="button" onClick={handleCancel}>Cancel</button>
+          <button type="submit">
+            {editingId ? 'Update List' : 'Create List'}
+          </button>
+
+          <button type="button" onClick={handleCancel}>
+            Cancel
+          </button>
+
         </form>
       )}
 
+      {/* LIST GRID */}
       <div className="lists-container">
+        <div className="lists-grid">
 
-        {/* ✅ SAFE CHECK */}
-        {lists.length === 0 ? (
-          <p>No lists found</p>
-        ) : (
-          lists.map(list => (
-            <div key={list.id}>
-              <h4>{list.name}</h4>
-              <p>{list.source}</p>
+          {lists.length === 0 ? (
+            <div className="empty-state">No lists found</div>
+          ) : (
+            lists.map(list => (
 
-              <button onClick={() => handleEdit(list)}>Edit</button>
-              <button onClick={() => handleDelete(list.id)}>Delete</button>
-            </div>
-          ))
-        )}
+              <div
+                key={list.id}
+                className="list-card"
+                onClick={() =>
+                  setExpandedId(expandedId === list.id ? null : list.id)
+                }
+              >
 
+                {/* HEADER */}
+                <div className="list-header">
+
+                  <div className="list-info">
+                    <h4>{list.name}</h4>
+                    <p className="list-source">{list.source}</p>
+                  </div>
+
+                  <div className="list-stats">
+                    <div className="stat">
+                      <span className="stat-value">{list.count}</span>
+                      <span className="stat-label">Leads</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* EXPANDED DETAILS */}
+                {expandedId === list.id && (
+                  <div className="list-details">
+
+                    <div className="detail-row">
+                      <span className="detail-label">Status</span>
+                      <span className="detail-value">{list.status}</span>
+                    </div>
+
+                    <div className="detail-row">
+                      <span className="detail-label">Created</span>
+                      <span className="detail-value">{list.createdDate}</span>
+                    </div>
+
+                    <div className="detail-actions">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleEdit(list)
+                        }}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(list.id)
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+
+                  </div>
+                )}
+
+              </div>
+
+            ))
+          )}
+
+        </div>
       </div>
     </div>
   )

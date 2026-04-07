@@ -1,16 +1,17 @@
-
 import { useState } from 'react'
 import { useData } from '../../Components/context/DataContext'
 import { useAuth } from '../../Components/context/AuthContext'
-import { Plus, Edit2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import './MyEnquiries.css'
 
 function MyEnquiries() {
+
   const { enquiries = [], users = [], addEnquiry, updateEnquiry } = useData()
   const { user } = useAuth()
 
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [expandedId, setExpandedId] = useState(null)
 
   const [formData, setFormData] = useState({
     studentName: '',
@@ -23,10 +24,8 @@ function MyEnquiries() {
     counselorId: ''
   })
 
-  // ✅ Only counselors
   const counselors = users.filter(u => u.role === 'COUNSELOR')
 
-  // ✅ FIXED FILTER (IMPORTANT)
   const myEnquiries = enquiries.filter(
     (e) => String(e.assignedCounselorId) === String(user?.id)
   )
@@ -47,17 +46,8 @@ function MyEnquiries() {
     }
 
     const payload = {
-      studentName: formData.studentName,
-      phone: formData.phone,
-      email: formData.email,
-      courseInterested: formData.courseInterested,
-      source: formData.source,
-      stage: formData.stage,
-      status: formData.status,
-
-      // 🔥 FINAL FIX (CORRECT FIELD)
+      ...formData,
       assignedCounselorId: parseInt(formData.counselorId),
-
       createdDate: new Date().toISOString().split('T')[0]
     }
 
@@ -68,7 +58,6 @@ function MyEnquiries() {
       addEnquiry(payload)
     }
 
-    // reset
     setFormData({
       studentName: '',
       phone: '',
@@ -85,16 +74,9 @@ function MyEnquiries() {
 
   const handleEdit = (enquiry) => {
     setFormData({
-      studentName: enquiry.studentName,
-      phone: enquiry.phone,
-      email: enquiry.email,
-      courseInterested: enquiry.courseInterested,
-      source: enquiry.source,
-      stage: enquiry.stage,
-      status: enquiry.status,
+      ...enquiry,
       counselorId: enquiry.assignedCounselorId || ''
     })
-
     setEditingId(enquiry.id)
     setShowForm(true)
   }
@@ -102,66 +84,61 @@ function MyEnquiries() {
   return (
     <div className="my-enquiries">
 
+      {/* HEADER */}
       <div className="page-header">
         <h2>My Leads</h2>
 
         <button
-          className="btn btn-primary"
+          className="btn-primary"
           onClick={() => setShowForm(!showForm)}
         >
-          <Plus size={20} />
-          {showForm ? 'Cancel' : 'Add New Lead'}
+          <Plus size={18} />
+          {showForm ? 'Cancel' : 'Add Lead'}
         </button>
       </div>
 
+      {/* FORM */}
       {showForm && (
         <form onSubmit={handleSubmit} className="enquiry-form">
 
-          <h3>{editingId ? 'Edit Lead' : 'Add New Lead'}</h3>
+          <input name="studentName" placeholder="Student Name"
+            value={formData.studentName} onChange={handleInputChange} required />
 
-          <div className="form-grid">
+          <input name="phone" placeholder="Phone"
+            value={formData.phone} onChange={handleInputChange} required />
 
-            <input name="studentName" placeholder="Student Name"
-              value={formData.studentName} onChange={handleInputChange} required />
+          <input name="email" placeholder="Email"
+            value={formData.email} onChange={handleInputChange} />
 
-            <input name="phone" placeholder="Phone"
-              value={formData.phone} onChange={handleInputChange} required />
+          <select name="courseInterested"
+            value={formData.courseInterested}
+            onChange={handleInputChange}>
+            {courses.map(c => <option key={c}>{c}</option>)}
+          </select>
 
-            <input name="email" placeholder="Email"
-              value={formData.email} onChange={handleInputChange} />
+          <select name="source"
+            value={formData.source}
+            onChange={handleInputChange}>
+            <option>Inbound</option>
+            <option>Walkin</option>
+            <option>Website</option>
+          </select>
 
-            <select name="courseInterested"
-              value={formData.courseInterested}
-              onChange={handleInputChange}>
-              {courses.map(c => <option key={c}>{c}</option>)}
-            </select>
+          <select
+            name="counselorId"
+            value={formData.counselorId}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Assign Counselor</option>
+            {counselors.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.name || c.email}
+              </option>
+            ))}
+          </select>
 
-            <select name="source"
-              value={formData.source}
-              onChange={handleInputChange}>
-              <option>Inbound</option>
-              <option>Walkin</option>
-              <option>Website</option>
-            </select>
-
-            {/* ✅ ASSIGN COUNSELOR */}
-            <select
-              name="counselorId"
-              value={formData.counselorId}
-              onChange={handleInputChange}
-              required
-            >
-              <option value="">-- Select Counselor --</option>
-              {counselors.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.name || c.email}
-                </option>
-              ))}
-            </select>
-
-          </div>
-
-          <button type="submit" className="btn btn-primary">
+          <button type="submit">
             {editingId ? 'Update Lead' : 'Add Lead'}
           </button>
 
@@ -169,29 +146,58 @@ function MyEnquiries() {
       )}
 
       {/* LIST */}
-      <div className="enquiries-list">
-        {myEnquiries.map(enquiry => {
+      <div className="enquiries-grid">
 
-          // ✅ Map counselor name
-          const counselor = users.find(
-            u => String(u.id) === String(enquiry.assignedCounselorId)
-          )
+        {myEnquiries.length === 0 ? (
+          <div className="empty-state">No leads found</div>
+        ) : (
+          myEnquiries.map(enquiry => {
 
-          return (
-            <div key={enquiry.id} className="enquiry-card">
-              <h4>{enquiry.studentName}</h4>
-              <p>{enquiry.phone}</p>
+            const counselor = users.find(
+              u => String(u.id) === String(enquiry.assignedCounselorId)
+            )
 
-              <p>
-                Counselor: {counselor?.name || counselor?.email || 'N/A'}
-              </p>
+            return (
+              <div
+                key={enquiry.id}
+                className="enquiry-card"
+                onClick={() =>
+                  setExpandedId(expandedId === enquiry.id ? null : enquiry.id)
+                }
+              >
 
-              <button onClick={() => handleEdit(enquiry)}>
-                <Edit2 size={16}/> Edit
-              </button>
-            </div>
-          )
-        })}
+                <span className="lead-status">{enquiry.stage}</span>
+
+                <h4>{enquiry.studentName}</h4>
+                <p>{enquiry.phone}</p>
+
+                {expandedId === enquiry.id && (
+                  <div className="enquiry-details">
+
+                    <p><b>Email:</b> {enquiry.email || 'N/A'}</p>
+                    <p><b>Course:</b> {enquiry.courseInterested}</p>
+
+                    <p>
+                      <b>Counselor:</b> {counselor?.name || counselor?.email || 'N/A'}
+                    </p>
+
+                    <div className="enquiry-actions">
+                      <button onClick={(e) => {
+                        e.stopPropagation()
+                        handleEdit(enquiry)
+                      }}>
+                        Edit
+                      </button>
+                    </div>
+
+                  </div>
+                )}
+
+              </div>
+            )
+          })
+        )}
+
       </div>
 
     </div>
@@ -199,4 +205,3 @@ function MyEnquiries() {
 }
 
 export default MyEnquiries
-
