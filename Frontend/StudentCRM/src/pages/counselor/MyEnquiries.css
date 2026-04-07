@@ -17,8 +17,9 @@
 }
 
 /* BUTTON */
-.btn-primary {
-  background: linear-gradient(135deg, #4f46e5, #22c55e);
+/* EXCEL IMPORT BUTTON */
+.btn-secondary {
+  background: linear-gradient(135deg, #0ea5e9, #22c55e);
   color: white;
   padding: 0.6rem 1.2rem;
   border-radius: 0.6rem;
@@ -27,6 +28,47 @@
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover Effect */
+.btn-secondary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+/* Click Effect */
+.btn-secondary:active {
+  transform: scale(0.95);
+}
+
+/* Icon Animation */
+.btn-secondary svg {
+  transition: transform 0.3s ease;
+}
+
+.btn-secondary:hover svg {
+  transform: rotate(-10deg) scale(1.1);
+}
+
+/* Shine Effect */
+.btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: skewX(-25deg);
+  transition: 0.5s;
+}
+
+.btn-secondary:hover::before {
+  left: 125%;
 }
 
 /* FORM */

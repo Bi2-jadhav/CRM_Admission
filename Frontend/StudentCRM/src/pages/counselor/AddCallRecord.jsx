@@ -84,7 +84,7 @@ function AddCallRecord() {
 
       {/* HEADER */}
       <div className="page-header">
-        <h2>📞 Call Records</h2>
+        <h2> Call Records</h2>
 
         <button
           className="btn btn-primary"
@@ -98,7 +98,7 @@ function AddCallRecord() {
       {/* SEARCH */}
       <input
         type="text"
-        placeholder="🔍 Search by student name..."
+        placeholder=" Search by student name..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="search-input"

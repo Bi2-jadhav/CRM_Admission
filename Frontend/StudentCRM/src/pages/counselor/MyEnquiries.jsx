@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useData } from '../../Components/context/DataContext'
 import { useAuth } from '../../Components/context/AuthContext'
-import { Plus } from 'lucide-react'
+import { Plus, Upload } from 'lucide-react'
 import './MyEnquiries.css'
 
 function MyEnquiries() {
 
-  const { enquiries = [], users = [], addEnquiry, updateEnquiry } = useData()
+  const { enquiries = [], users = [], addEnquiry, updateEnquiry, getAllEnquiries } = useData()
   const { user } = useAuth()
 
   const [showForm, setShowForm] = useState(false)
@@ -37,7 +37,43 @@ function MyEnquiries() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  // ✅ FINAL FIXED EXCEL UPLOAD
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("counselorId", user?.id)
+
+    try {
+      const res = await fetch("http://localhost:8080/api/admin/enquiries/upload", {
+        method: "POST",
+        body: formData
+      })
+
+      // ✅ Proper error handling
+      if (!res.ok) {
+        const errorText = await res.text()
+        throw new Error(errorText)
+      }
+
+      const msg = await res.text()
+      alert(msg)
+
+      // ✅ Refresh list
+      await getAllEnquiries()
+
+    } catch (err) {
+      console.error(err)
+      alert("Upload failed ❌: " + err.message)
+    }
+
+    // ✅ VERY IMPORTANT (fix re-upload issue)
+    e.target.value = ""
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!formData.counselorId) {
@@ -52,10 +88,10 @@ function MyEnquiries() {
     }
 
     if (editingId) {
-      updateEnquiry(editingId, payload)
+      await updateEnquiry(editingId, payload)
       setEditingId(null)
     } else {
-      addEnquiry(payload)
+      await addEnquiry(payload)
     }
 
     setFormData({
@@ -88,13 +124,29 @@ function MyEnquiries() {
       <div className="page-header">
         <h2>My Leads</h2>
 
-        <button
-          className="btn-primary"
-          onClick={() => setShowForm(!showForm)}
-        >
-          <Plus size={18} />
-          {showForm ? 'Cancel' : 'Add Lead'}
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          
+          {/* Upload Button */}
+          <label className="btn-secondary">
+            <Upload size={16} />
+            Import Excel
+            <input
+              type="file"
+              accept=".xlsx, .csv"
+              onChange={handleFileUpload}
+              hidden
+            />
+          </label>
+
+          <button
+            className="btn-primary"
+            onClick={() => setShowForm(!showForm)}
+          >
+            <Plus size={18} />
+            {showForm ? 'Cancel' : 'Add Lead'}
+          </button>
+
+        </div>
       </div>
 
       {/* FORM */}

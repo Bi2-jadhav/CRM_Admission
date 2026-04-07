@@ -9,7 +9,7 @@
         <module name="ApiGatewayService" />
         <module name="ServiceRegistryService" />
       </profile>
-      <profile name="Annotation profile for authService" enabled="true">
+      <profile name="Annotation profile for AdminService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />

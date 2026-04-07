@@ -10,10 +10,8 @@ export const DataProvider = ({ children }) => {
   const [courses, setCourses] = useState([])
   const [enquiries, setEnquiries] = useState([])
   const [callRecords, setCallRecords] = useState([])
-  // ADD THIS STATE
-const [followups, setFollowups] = useState([])
+  const [followups, setFollowups] = useState([])
   const [loading, setLoading] = useState(false)
-  
 
   const { token, authReady } = useAuth()
 
@@ -260,71 +258,47 @@ const [followups, setFollowups] = useState([])
       setCallRecords(data || [])
 
     } catch (err) {
-      console.error("CallRecords error:", err)
+      console.error("Call records error:", err)
     }
   }
 
   const addCallRecord = async (call) => {
-  try {
-    console.log("📤 Sending Call Record:", call)
+    try {
+      const res = await fetch('http://localhost:8080/api/counselor/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(call)
+      })
 
-    const res = await fetch('http://localhost:8080/api/counselor/calls', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(call)
-    })
+      if (!res.ok) throw new Error("Failed to save call record")
 
-    if (!res.ok) {
-      const errorText = await res.text()
-      console.error("❌ Backend Error:", errorText)
-      return false
+      await getAllCallRecords()
+
+    } catch (err) {
+      console.error("Add call record error:", err)
     }
-
-    const data = await res.json()
-    console.log("✅ Saved:", data)
-
-    await getAllCallRecords()
-    return true
-
-  } catch (err) {
-    console.error(err)
-    return false
   }
-}
 
- // ✅ NEW (FINAL FIX) 
- const getCallRecordsByEnquiry = (enquiryId) => { 
-  return callRecords.filter( 
-    c => String(c.enquiryId) === String(enquiryId) 
-  ) 
-}
-
-  // ================= FOLLOWUPS =================
-
-// ✅ helper (VERY IMPORTANT)
-const safeArray = (data) => Array.isArray(data) ? data : []
-
-// ================= GET =================
+  // ================= FOLLOW-UPS =================
 const getAllFollowups = async () => {
   try {
+    if (!token) return
+
     const res = await fetch('http://localhost:8080/api/counselor/followups', {
       headers: { Authorization: `Bearer ${token}` }
     })
 
     const data = await res.json()
-
-    setFollowups(Array.isArray(data) ? data : [])
+    setFollowups(data || [])
 
   } catch (err) {
-    console.error(err)
-    setFollowups([])
+    console.error("Followups error:", err)
   }
 }
 
-// ================= ADD =================
 const addFollowup = async (followup) => {
   try {
     const res = await fetch('http://localhost:8080/api/counselor/followups', {
@@ -336,44 +310,14 @@ const addFollowup = async (followup) => {
       body: JSON.stringify(followup)
     })
 
-    if (!res.ok) throw new Error("Failed")
+    if (!res.ok) throw new Error("Failed to save followup")
 
-    // 🔥 IMPORTANT
     await getAllFollowups()
 
   } catch (err) {
-    console.error(err)
+    console.error("Add followup error:", err)
   }
 }
-
-// ================= UPDATE =================
-const updateFollowup = async (id, followup) => {
-  try {
-    const res = await fetch(`http://localhost:8080/api/counselor/followups/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(followup)
-    })
-
-    if (!res.ok) {
-      const errorText = await res.text()
-      console.error("❌ Update Error:", errorText)
-      return false
-    }
-
-    await getAllFollowups()
-    return true
-
-  } catch (err) {
-    console.error("Update followup error:", err)
-    return false
-  }
-}
-
-
 
   // ================= INIT =================
   useEffect(() => {
@@ -382,8 +326,8 @@ const updateFollowup = async (id, followup) => {
       getAllLists()
       getAllCourses()
       getAllEnquiries()
-      getAllCallRecords()
-      getAllFollowups()
+      getAllCallRecords() // ✅ added
+      getAllFollowups() // ✅ add this
     }
   }, [authReady, token])
 
@@ -395,10 +339,11 @@ const updateFollowup = async (id, followup) => {
         courses,
         enquiries,
         callRecords,
-        followups, 
+        followups,
         loading,
 
         getAllUsers,
+        getAllEnquiries,
 
         addList,
         updateList,
@@ -412,14 +357,12 @@ const updateFollowup = async (id, followup) => {
         updateEnquiry,
         deleteEnquiry,
 
-         getAllCallRecords,
-         addCallRecord,
-         getCallRecordsByEnquiry,
-            
-         getAllFollowups,
-         addFollowup,
-         updateFollowup
-      }}
+        // ✅ NEW
+        getAllCallRecords,
+        addCallRecord,
+        getAllFollowups,
+        addFollowup
+}}
     >
       {children}
     </DataContext.Provider>
