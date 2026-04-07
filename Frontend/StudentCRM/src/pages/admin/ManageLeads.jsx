@@ -21,6 +21,9 @@ function ManageLeads() {
   const [editingId, setEditingId] = useState(null)
   const [expandedId, setExpandedId] = useState(null)
 
+  const [search, setSearch] = useState("")
+  const [filterStage, setFilterStage] = useState("All")
+
   const [formData, setFormData] = useState({
     studentName: '',
     phone: '',
@@ -48,31 +51,36 @@ function ManageLeads() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (editingId) {
-      updateEnquiry(editingId, formData)
-      setEditingId(null)
-    } else {
-      addEnquiry({
-        ...formData,
-        createdDate: new Date().toISOString().split('T')[0]
+    try {
+      if (editingId) {
+        await updateEnquiry(editingId, formData)
+        setEditingId(null)
+      } else {
+        await addEnquiry({
+          ...formData,
+          createdDate: new Date().toISOString().split('T')[0]
+        })
+      }
+
+      setFormData({
+        studentName: '',
+        phone: '',
+        email: '',
+        courseInterested: 'MBA',
+        source: 'Meta',
+        stage: 'New',
+        assignedCounselorId: null,
+        status: 'New'
       })
+
+      setShowForm(false)
+
+    } catch (err) {
+      console.error("Submit error:", err)
     }
-
-    setFormData({
-      studentName: '',
-      phone: '',
-      email: '',
-      courseInterested: 'MBA',
-      source: 'Meta',
-      stage: 'New',
-      assignedCounselorId: null,
-      status: 'New'
-    })
-
-    setShowForm(false)
   }
 
   const handleEdit = (enquiry) => {
@@ -90,9 +98,9 @@ function ManageLeads() {
     setShowForm(true)
   }
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this lead?')) {
-      deleteEnquiry(id)
+      await deleteEnquiry(id)
     }
   }
 
@@ -100,6 +108,13 @@ function ManageLeads() {
     setShowForm(false)
     setEditingId(null)
   }
+
+  // ✅ FILTERED DATA
+  const filteredEnquiries = enquiries.filter(e =>
+    (e.studentName?.toLowerCase().includes(search.toLowerCase()) ||
+      e.phone?.includes(search)) &&
+    (filterStage === "All" || e.stage === filterStage)
+  )
 
   return (
     <div className="manage-leads">
@@ -117,32 +132,27 @@ function ManageLeads() {
         </button>
       </div>
 
+      {/* 🔍 FILTERS */}
+      <div className="filters">
+        <input
+          type="text"
+          placeholder="Search by name or phone"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <select value={filterStage} onChange={(e) => setFilterStage(e.target.value)}>
+          <option value="All">All</option>
+          {stages.map(s => <option key={s}>{s}</option>)}
+        </select>
+      </div>
+
       {/* FORM */}
       {showForm && (
         <form onSubmit={handleSubmit} className="lead-form">
-
-          <input
-            name="studentName"
-            value={formData.studentName}
-            onChange={handleInputChange}
-            placeholder="Student Name"
-            required
-          />
-
-          <input
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            placeholder="Phone Number"
-            required
-          />
-
-          <input
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Email"
-          />
+          <input name="studentName" value={formData.studentName} onChange={handleInputChange} placeholder="Student Name" required />
+          <input name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" required />
+          <input name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" />
 
           <select name="courseInterested" value={formData.courseInterested} onChange={handleInputChange}>
             {courses.map(c => <option key={c}>{c}</option>)}
@@ -156,11 +166,7 @@ function ManageLeads() {
             {stages.map(s => <option key={s}>{s}</option>)}
           </select>
 
-          <select
-            name="assignedCounselorId"
-            value={formData.assignedCounselorId || ''}
-            onChange={handleInputChange}
-          >
+          <select name="assignedCounselorId" value={formData.assignedCounselorId || ''} onChange={handleInputChange}>
             <option value="">Assign Counselor</option>
             {counselors.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -174,17 +180,16 @@ function ManageLeads() {
           <button type="button" onClick={handleCancel}>
             Cancel
           </button>
-
         </form>
       )}
 
       {/* LIST */}
       <div className="leads-list">
 
-        {enquiries.length === 0 ? (
+        {filteredEnquiries.length === 0 ? (
           <div className="empty-state">No leads found</div>
         ) : (
-          enquiries.map(enquiry => (
+          filteredEnquiries.map(enquiry => (
 
             <div
               key={enquiry.id}
@@ -194,14 +199,11 @@ function ManageLeads() {
               }
             >
 
-              {/* STATUS BADGE */}
               <span className="lead-status">{enquiry.stage}</span>
 
-              {/* BASIC INFO */}
               <h4>{enquiry.studentName}</h4>
               <p>{enquiry.phone}</p>
 
-              {/* EXPANDED DETAILS */}
               {expandedId === enquiry.id && (
                 <div className="lead-details">
 
@@ -209,10 +211,28 @@ function ManageLeads() {
                   <p><b>Course:</b> {enquiry.courseInterested}</p>
                   <p><b>Source:</b> {enquiry.source}</p>
 
-                  <p>
+                  {/* 🔥 ASSIGN COUNSELOR */}
+                  <div>
                     <b>Counselor:</b>{" "}
-                    {counselors.find(c => c.id === enquiry.assignedCounselorId)?.name || "Unassigned"}
-                  </p>
+                    <select
+                      value={enquiry.assignedCounselorId || ""}
+                      onChange={async (e) => {
+                        const newId = e.target.value ? Number(e.target.value) : null
+
+                        await updateEnquiry(enquiry.id, {
+                          ...enquiry,
+                          assignedCounselorId: newId
+                        })
+                      }}
+                    >
+                      <option value="">Unassigned</option>
+                      {counselors.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
                   <div className="lead-actions">
                     <button onClick={(e) => {

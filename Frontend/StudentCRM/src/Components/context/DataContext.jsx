@@ -52,43 +52,53 @@ export const DataProvider = ({ children }) => {
     }
   }
 
-  const addEnquiry = async (enquiry) => {
-    try {
-      const res = await fetch('http://localhost:8080/api/admin/enquiries', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(enquiry)
-      })
+const addEnquiry = async (enquiry) => {
+  try {
+    const res = await fetch('http://localhost:8080/api/admin/enquiries', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(enquiry)
+    })
 
-      if (!res.ok) throw new Error("Failed to add enquiry")
-      await getAllEnquiries()
+    if (!res.ok) throw new Error("Failed to add enquiry")
 
-    } catch (err) {
-      console.error("Add enquiry error:", err)
-    }
+    const newData = await res.json()
+
+    // ✅ instant add
+    setEnquiries(prev => [...prev, newData])
+
+  } catch (err) {
+    console.error("Add enquiry error:", err)
   }
+}
 
   const updateEnquiry = async (id, enquiry) => {
-    try {
-      const res = await fetch(`http://localhost:8080/api/admin/enquiries/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(enquiry)
-      })
+  try {
+    const res = await fetch(`http://localhost:8080/api/admin/enquiries/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(enquiry)
+    })
 
-      if (!res.ok) throw new Error("Failed to update enquiry")
-      await getAllEnquiries()
+    if (!res.ok) throw new Error("Failed to update enquiry")
 
-    } catch (err) {
-      console.error(err)
-    }
+    const updated = await res.json()
+
+    // ✅ instant UI update (NO DELAY)
+    setEnquiries(prev =>
+      prev.map(e => (e.id === id ? updated : e))
+    )
+
+  } catch (err) {
+    console.error("Update enquiry error:", err)
   }
+}
 
   // ================= CALL RECORDS =================
   const getAllCallRecords = async () => {
@@ -190,6 +200,158 @@ export const DataProvider = ({ children }) => {
     }
   }
 
+  // ================= COURSES =================
+
+const getAllCourses = async () => {
+  try {
+    if (!token) return
+
+    const res = await fetch('http://localhost:8080/api/admin/courses', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const data = await res.json()
+    setCourses(data || [])
+
+  } catch (err) {
+    console.error("Courses error:", err)
+  }
+}
+
+const addCourse = async (course) => {
+  try {
+    const res = await fetch('http://localhost:8080/api/admin/courses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(course)
+    })
+
+    if (!res.ok) throw new Error("Failed to add course")
+
+    await getAllCourses()
+
+  } catch (err) {
+    console.error("Add course error:", err)
+  }
+}
+
+const updateCourse = async (id, course) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/admin/courses/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(course)
+    })
+
+    if (!res.ok) throw new Error("Failed to update course")
+
+    await getAllCourses()
+
+  } catch (err) {
+    console.error("Update course error:", err)
+  }
+}
+
+const deleteCourse = async (id) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/admin/courses/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (!res.ok) throw new Error("Failed to delete course")
+
+    await getAllCourses()
+
+  } catch (err) {
+    console.error("Delete course error:", err)
+  }
+}
+
+// ================= LISTS =================
+
+const getAllLists = async () => {
+  try {
+    if (!token) return
+
+    const res = await fetch('http://localhost:8080/api/admin/lists', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const data = await res.json()
+    setLists(data || [])
+
+  } catch (err) {
+    console.error("Lists error:", err)
+  }
+}
+
+const addList = async (list) => {
+  try {
+    const res = await fetch('http://localhost:8080/api/admin/lists', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(list)
+    })
+
+    if (!res.ok) throw new Error("Failed to add list")
+
+    await getAllLists()
+
+  } catch (err) {
+    console.error("Add list error:", err)
+  }
+}
+
+const updateList = async (id, list) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/admin/lists/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(list)
+    })
+
+    if (!res.ok) throw new Error("Failed to update list")
+
+    await getAllLists()
+
+  } catch (err) {
+    console.error("Update list error:", err)
+  }
+}
+
+const deleteList = async (id) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/admin/lists/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (!res.ok) throw new Error("Failed to delete list")
+
+    await getAllLists()
+
+  } catch (err) {
+    console.error("Delete list error:", err)
+  }
+}
+
   // ================= INIT =================
   useEffect(() => {
     if (authReady && token) {
@@ -197,6 +359,16 @@ export const DataProvider = ({ children }) => {
       getAllEnquiries()
       getAllCallRecords()
       getAllFollowups()
+      getAllCourses()
+      getAllLists()
+
+      // 🔥 AUTO SYNC WITH COUNSELOR
+    const interval = setInterval(() => {
+      getAllEnquiries()
+    }, 2000) // every 2 sec
+
+    return () => clearInterval(interval)
+    
     }
   }, [authReady, token])
 
@@ -217,6 +389,18 @@ export const DataProvider = ({ children }) => {
 
         getAllCallRecords,
         addCallRecord,
+
+        courses,
+        getAllCourses,
+        addCourse,
+        updateCourse,
+        deleteCourse,
+
+        lists,
+        getAllLists,
+        addList,
+        updateList,
+        deleteList,
 
         getAllFollowups,
         addFollowup,
