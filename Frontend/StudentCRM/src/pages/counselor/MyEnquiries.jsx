@@ -32,12 +32,14 @@ function MyEnquiries() {
 
   const courses = ['MBA', 'MCA', 'BCA', 'B.Tech', 'M.Tech', 'Other']
 
+  // ✅ NEW STATUS LIST
+  const statuses = ['New', 'Called', 'Follow-up', 'Closed', 'Converted']
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  // ✅ FINAL FIXED EXCEL UPLOAD
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -52,7 +54,6 @@ function MyEnquiries() {
         body: formData
       })
 
-      // ✅ Proper error handling
       if (!res.ok) {
         const errorText = await res.text()
         throw new Error(errorText)
@@ -61,7 +62,6 @@ function MyEnquiries() {
       const msg = await res.text()
       alert(msg)
 
-      // ✅ Refresh list
       await getAllEnquiries()
 
     } catch (err) {
@@ -69,7 +69,6 @@ function MyEnquiries() {
       alert("Upload failed ❌: " + err.message)
     }
 
-    // ✅ VERY IMPORTANT (fix re-upload issue)
     e.target.value = ""
   }
 
@@ -120,13 +119,11 @@ function MyEnquiries() {
   return (
     <div className="my-enquiries">
 
-      {/* HEADER */}
       <div className="page-header">
         <h2>My Leads</h2>
 
         <div style={{ display: "flex", gap: "10px" }}>
           
-          {/* Upload Button */}
           <label className="btn-secondary">
             <Upload size={16} />
             Import Excel
@@ -176,6 +173,15 @@ function MyEnquiries() {
             <option>Website</option>
           </select>
 
+          {/* ✅ NEW STATUS DROPDOWN */}
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+          >
+            {statuses.map(s => <option key={s}>{s}</option>)}
+          </select>
+
           <select
             name="counselorId"
             value={formData.counselorId}
@@ -218,7 +224,8 @@ function MyEnquiries() {
                 }
               >
 
-                <span className="lead-status">{enquiry.stage}</span>
+                {/* ✅ SHOW STATUS */}
+                <span className="lead-status">{enquiry.status}</span>
 
                 <h4>{enquiry.studentName}</h4>
                 <p>{enquiry.phone}</p>
@@ -228,6 +235,7 @@ function MyEnquiries() {
 
                     <p><b>Email:</b> {enquiry.email || 'N/A'}</p>
                     <p><b>Course:</b> {enquiry.courseInterested}</p>
+                    <p><b>Status:</b> {enquiry.status}</p>
 
                     <p>
                       <b>Counselor:</b> {counselor?.name || counselor?.email || 'N/A'}

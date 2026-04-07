@@ -4,10 +4,11 @@ import { TrendingUp, Users, Phone, CheckCircle } from 'lucide-react'
 import './MyPerformance.css'
 
 function MyPerformance() {
-  const { user } = useAuth()   // ✅ FIXED
+  // ✅ FIXED ERROR
+  const { user } = useAuth()
   const { enquiries = [], callRecords = [], followups = [], loading } = useData()
 
-  // ✅ SAFETY GUARDS
+  // ✅ SAFETY
   if (loading) return <div>Loading...</div>
   if (!user) return <div>Unauthorized</div>
 
@@ -25,9 +26,9 @@ function MyPerformance() {
     return enquiry && enquiry.assignedCounselorId === user.id
   })
 
-  // ✅ CALCULATIONS
+  // ✅ FIXED: use status instead of stage
   const convertedEnquiries = myEnquiries.filter(
-    e => e.stage === 'Converted'
+    e => e.status === 'Converted'
   ).length
 
   const conversionRate =
@@ -49,13 +50,13 @@ function MyPerformance() {
     f => f.status === 'Completed'
   ).length
 
-  // ✅ DISTRIBUTIONS
+  // ✅ FIXED DISTRIBUTION (status-based)
   const enquiriesByStage = {
-    New: myEnquiries.filter(e => e.stage === 'New').length,
-    Called: myEnquiries.filter(e => e.stage === 'Called').length,
-    'Follow-up': myEnquiries.filter(e => e.stage === 'Follow-up').length,
-    Closed: myEnquiries.filter(e => e.stage === 'Closed').length,
-    Converted: convertedEnquiries
+    New: myEnquiries.filter(e => e.status === 'New').length,
+    Called: myEnquiries.filter(e => e.status === 'Called').length,
+    'Follow-up': myEnquiries.filter(e => e.status === 'Follow-up').length,
+    Closed: myEnquiries.filter(e => e.status === 'Closed').length,
+    Converted: myEnquiries.filter(e => e.status === 'Converted').length
   }
 
   const callsByStatus = {}

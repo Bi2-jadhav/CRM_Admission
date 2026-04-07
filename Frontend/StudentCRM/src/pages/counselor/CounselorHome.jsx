@@ -1,4 +1,3 @@
-
 import { useAuth } from '../../Components/context/AuthContext'
 import { useData } from '../../Components/context/DataContext'
 import { FileText, Phone, Calendar, TrendingUp } from 'lucide-react'
@@ -8,7 +7,7 @@ function CounselorHome() {
   const { user, authReady } = useAuth()
   const data = useData()
 
-  // ✅ SAFE DATA (NO CRASH EVER)
+  // ✅ SAFE DATA
   const enquiries = Array.isArray(data.enquiries) ? data.enquiries : []
   const callRecords = Array.isArray(data.callRecords) ? data.callRecords : []
   const followups = Array.isArray(data.followups) ? data.followups : []
@@ -19,7 +18,7 @@ function CounselorHome() {
   if (!user) return <div>Not logged in</div>
   if (loading) return <div>Loading data...</div>
 
-  // ✅ FIXED FILTERS (FINAL)
+  // ✅ FILTERS
   const myEnquiries = enquiries.filter(
     (e) => String(e.assignedCounselorId) === String(user.id)
   )
@@ -32,9 +31,9 @@ function CounselorHome() {
     (f) => String(f.counselorId) === String(user.id)
   )
 
-  // ✅ CALCULATIONS
+  // ✅ 🔥 FIXED HERE (status instead of stage)
   const convertedEnquiries = myEnquiries.filter(
-    (e) => e.stage === 'Converted'
+    (e) => e.status === 'Converted'
   ).length
 
   const conversionRate =
@@ -72,20 +71,17 @@ function CounselorHome() {
   return (
     <div className="counselor-home">
 
-      {/* HEADER */}
       <div className="page-header">
         <h2>Welcome, {user.email}</h2>
         <p>Your daily dashboard and task summary</p>
       </div>
 
-      {/* EMPTY STATE (IMPORTANT UX) */}
       {myEnquiries.length === 0 && (
         <div className="empty-state">
           <p>No enquiries assigned yet.</p>
         </div>
       )}
 
-      {/* STATS */}
       <div className="stats-grid">
         {stats.map((stat, index) => {
           const Icon = stat.icon
@@ -108,4 +104,3 @@ function CounselorHome() {
 }
 
 export default CounselorHome
-

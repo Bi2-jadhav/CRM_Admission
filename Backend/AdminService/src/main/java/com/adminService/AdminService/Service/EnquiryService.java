@@ -48,19 +48,33 @@ public class EnquiryService {
     public Enquiry update(Long id, Enquiry updated) {
         Enquiry existing = getById(id);
 
-        existing.setStudentName(updated.getStudentName());
-        existing.setPhone(updated.getPhone());
-        existing.setEmail(updated.getEmail());
-        existing.setCourseInterested(updated.getCourseInterested());
-        existing.setSource(updated.getSource());
-        existing.setStage(updated.getStage());
+        // ✅ ONLY update if NOT NULL
+        if (updated.getStudentName() != null)
+            existing.setStudentName(updated.getStudentName());
 
-        // ✅ SAFE UPDATE
+        if (updated.getPhone() != null)
+            existing.setPhone(updated.getPhone());
+
+        if (updated.getEmail() != null)
+            existing.setEmail(updated.getEmail());
+
+        if (updated.getCourseInterested() != null)
+            existing.setCourseInterested(updated.getCourseInterested());
+
+        if (updated.getSource() != null)
+            existing.setSource(updated.getSource());
+
+        // ❌ REMOVE THIS LINE (IMPORTANT)
+        // existing.setStage(updated.getStage());
+
+        // ✅ KEEP ONLY STATUS
+        if (updated.getStatus() != null) {
+            existing.setStatus(updated.getStatus());
+        }
+
         if (updated.getAssignedCounselorId() != null) {
             existing.setAssignedCounselorId(updated.getAssignedCounselorId());
         }
-
-        existing.setStatus(updated.getStatus());
 
         return repo.save(existing);
     }

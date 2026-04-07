@@ -5,6 +5,7 @@ import { Plus, ChevronDown } from 'lucide-react'
 import './AddCallRecord.css'
 
 function AddCallRecord() {
+
   const { user } = useAuth()
 
   const {
@@ -29,6 +30,7 @@ function AddCallRecord() {
   if (loading) return <div>Loading...</div>
   if (!user) return <div>Unauthorized</div>
 
+  // ✅ FILTER DATA
   const myEnquiries = enquiries.filter(
     e => String(e.assignedCounselorId) === String(user.id)
   )
@@ -55,11 +57,14 @@ function AddCallRecord() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  // ✅ FINAL FIXED SUBMIT (NO DOUBLE UPDATE)
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    const enquiryId = parseInt(formData.enquiryId)
+
     const success = await addCallRecord({
-      enquiryId: parseInt(formData.enquiryId),
+      enquiryId,
       counselorId: user.id,
       callDate: formData.callDate,
       duration: parseInt(formData.duration),
@@ -68,6 +73,9 @@ function AddCallRecord() {
     })
 
     if (success) {
+      // ❌ REMOVED: updateEnquiry call
+      // Backend (Admin Service) now updates status
+
       setFormData({
         enquiryId: '',
         callDate: new Date().toISOString().split('T')[0],
@@ -75,6 +83,7 @@ function AddCallRecord() {
         callStatus: 'Completed',
         remarks: ''
       })
+
       setShowForm(false)
     }
   }
@@ -82,9 +91,8 @@ function AddCallRecord() {
   return (
     <div className="add-call-record">
 
-      {/* HEADER */}
       <div className="page-header">
-        <h2> Call Records</h2>
+        <h2>Call Records</h2>
 
         <button
           className="btn btn-primary"
@@ -95,19 +103,16 @@ function AddCallRecord() {
         </button>
       </div>
 
-      {/* SEARCH */}
       <input
         type="text"
-        placeholder=" Search by student name..."
+        placeholder="Search by student name..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="search-input"
       />
 
-      {/* FORM */}
       {showForm && (
         <form onSubmit={handleSubmit} className="call-form">
-          <h3>Add Call Record</h3>
 
           <select
             name="enquiryId"
@@ -123,42 +128,62 @@ function AddCallRecord() {
             ))}
           </select>
 
-          <input type="date" name="callDate" value={formData.callDate} onChange={handleInputChange} />
-          <input type="number" name="duration" placeholder="Duration" value={formData.duration} onChange={handleInputChange} />
+          <input
+            type="date"
+            name="callDate"
+            value={formData.callDate}
+            onChange={handleInputChange}
+          />
 
-          <select name="callStatus" value={formData.callStatus} onChange={handleInputChange}>
+          <input
+            type="number"
+            name="duration"
+            placeholder="Duration (minutes)"
+            value={formData.duration}
+            onChange={handleInputChange}
+            required
+          />
+
+          <select
+            name="callStatus"
+            value={formData.callStatus}
+            onChange={handleInputChange}
+          >
             <option>Completed</option>
             <option>Not Answered</option>
             <option>Busy</option>
             <option>Failed</option>
           </select>
 
-          <textarea name="remarks" value={formData.remarks} onChange={handleInputChange} placeholder="Remarks" />
+          <textarea
+            name="remarks"
+            value={formData.remarks}
+            onChange={handleInputChange}
+            placeholder="Remarks"
+          />
 
           <button className="btn btn-primary">Save</button>
         </form>
       )}
 
-      {/* LIST */}
       <div className="call-records-list">
 
         {myCallRecords.length === 0 ? (
           <div className="empty-state">
-            <p>📭 No call records yet</p>
+            <p>No call records yet</p>
           </div>
         ) : (
 
-          myCallRecords.map((c, index) => {
+          myCallRecords.map((c) => {
             const enquiry = enquiries.find(e => e.id === c.enquiryId)
 
             return (
-              <div key={index} className="call-card">
+              <div key={c.id} className="call-card">
 
-                {/* HEADER */}
                 <div
                   className="call-header"
                   onClick={() =>
-                    setExpandedId(expandedId === index ? null : index)
+                    setExpandedId(expandedId === c.id ? null : c.id)
                   }
                 >
                   <div>
@@ -173,8 +198,7 @@ function AddCallRecord() {
                   <ChevronDown size={20} />
                 </div>
 
-                {/* DETAILS */}
-                {expandedId === index && (
+                {expandedId === c.id && (
                   <div className="call-details">
                     <p><strong>Phone:</strong> {enquiry?.phone}</p>
                     <p><strong>Duration:</strong> {c.duration} mins</p>

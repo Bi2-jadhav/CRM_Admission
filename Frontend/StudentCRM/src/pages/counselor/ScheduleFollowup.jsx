@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { useAuth } from '../../Components/context/AuthContext'
 import { useData } from '../../Components/context/DataContext'
@@ -14,7 +13,8 @@ function ScheduleFollowup() {
   const followups = Array.isArray(data.followups) ? data.followups : []
   const users = Array.isArray(data.users) ? data.users : []
 
-  const { addFollowup, updateFollowup, loading } = data
+  // ✅ ADDED updateEnquiry
+  const { addFollowup, updateFollowup, updateEnquiry, loading } = data
 
   const [showForm, setShowForm] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
@@ -30,7 +30,7 @@ function ScheduleFollowup() {
   if (!user) return <div>Not logged in</div>
   if (loading) return <div>Loading...</div>
 
-  // 🔥 SAFE FILTER (WITH FALLBACK)
+  // ✅ FILTER DATA
   const myEnquiries = enquiries.filter(
     e => String(e.assignedCounselorId) === String(user.id)
   )
@@ -44,7 +44,8 @@ function ScheduleFollowup() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  // ✅ 🔥 FIXED SUBMIT
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!formData.enquiryId || !formData.followupDate) {
@@ -52,13 +53,22 @@ function ScheduleFollowup() {
       return
     }
 
-    addFollowup({
-      enquiryId: parseInt(formData.enquiryId),
+    const enquiryId = parseInt(formData.enquiryId)
+
+    const success = await addFollowup({
+      enquiryId,
       counselorId: user.id,
       followupDate: formData.followupDate,
       status: formData.status,
       remarks: formData.remarks
     })
+
+    // ✅ UPDATE ENQUIRY STATUS
+    if (success) {
+      await updateEnquiry(enquiryId, {
+        status: 'Follow-up'
+      })
+    }
 
     setFormData({
       enquiryId: '',
@@ -70,14 +80,19 @@ function ScheduleFollowup() {
     setShowForm(false)
   }
 
-  const handleMarkComplete = (id) => {
-    updateFollowup(id, { status: 'Completed' })
+  // ✅ 🔥 FIXED COMPLETE
+  const handleMarkComplete = async (id, enquiryId) => {
+    await updateFollowup(id, { status: 'Completed' })
+
+    // ✅ UPDATE ENQUIRY STATUS
+    await updateEnquiry(enquiryId, {
+      status: 'Closed'
+    })
   }
 
   return (
     <div className="schedule-followup">
 
-      {/* HEADER */}
       <div className="page-header">
         <h2>Schedule Follow-ups</h2>
 
@@ -94,7 +109,6 @@ function ScheduleFollowup() {
       {showForm && (
         <form onSubmit={handleSubmit} className="followup-form">
 
-          {/* 🔥 SELECT ENQUIRY FIX */}
           <select
             name="enquiryId"
             value={formData.enquiryId}
@@ -155,7 +169,7 @@ function ScheduleFollowup() {
           </div>
         ) : (
 
-          myFollowups.map((f, index) => {
+          myFollowups.map((f) => {
 
             const enquiry = enquiries.find(
               e => String(e.id) === String(f.enquiryId)
@@ -166,12 +180,12 @@ function ScheduleFollowup() {
             )
 
             return (
-              <div key={index} className="followup-card">
+              <div key={f.id} className="followup-card">
 
                 <div
                   className="followup-header"
                   onClick={() =>
-                    setExpandedId(expandedId === index ? null : index)
+                    setExpandedId(expandedId === f.id ? null : f.id)
                   }
                 >
                   <div>
@@ -186,7 +200,7 @@ function ScheduleFollowup() {
                   <ChevronDown size={20} />
                 </div>
 
-                {expandedId === index && (
+                {expandedId === f.id && (
                   <div className="followup-details">
 
                     <p><strong>Phone:</strong> {enquiry?.phone}</p>
@@ -201,7 +215,7 @@ function ScheduleFollowup() {
                     {f.status === 'Pending' && (
                       <button
                         className="btn btn-primary"
-                        onClick={() => handleMarkComplete(f.id)}
+                        onClick={() => handleMarkComplete(f.id, f.enquiryId)}
                       >
                         Mark Completed
                       </button>
@@ -223,4 +237,3 @@ function ScheduleFollowup() {
 }
 
 export default ScheduleFollowup
-
