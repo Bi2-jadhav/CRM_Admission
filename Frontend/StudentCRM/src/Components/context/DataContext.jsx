@@ -11,6 +11,7 @@ export const DataProvider = ({ children }) => {
   const [enquiries, setEnquiries] = useState([])
   const [callRecords, setCallRecords] = useState([])
   const [followups, setFollowups] = useState([])
+  const [admissions, setAdmissions] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -20,19 +21,13 @@ export const DataProvider = ({ children }) => {
   const getAllUsers = async () => {
     try {
       if (!token) return
-      setLoading(true)
-
       const res = await fetch('http://localhost:8080/api/auth/users', {
         headers: { Authorization: `Bearer ${token}` }
       })
-
       const data = await res.json()
       setUsers(data || [])
-
     } catch (err) {
       console.error("Users error:", err)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -45,13 +40,11 @@ export const DataProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` }
       })
 
-      if (!res.ok) {
-        throw new Error(`Failed to fetch enquiries: ${res.status}`)
-      }
+      if (!res.ok) throw new Error(`Failed to fetch enquiries: ${res.status}`)
 
       const data = await res.json()
       setEnquiries(data || [])
-      setError(null) // Clear any previous errors
+      setError(null)
 
     } catch (err) {
       console.error("Enquiry error:", err)
@@ -59,75 +52,94 @@ export const DataProvider = ({ children }) => {
     }
   }
 
-const addEnquiry = async (enquiry) => {
-  try {
-    const res = await fetch('http://localhost:8080/api/admin/enquiries', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(enquiry)
-    })
+  const addEnquiry = async (enquiry) => {
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/enquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(enquiry)
+      })
 
-    if (!res.ok) throw new Error("Failed to add enquiry")
+      if (!res.ok) throw new Error("Failed to add enquiry")
 
-    const newData = await res.json()
+      const newData = await res.json()
+      setEnquiries(prev => [...prev, newData])
 
-    // ✅ instant add
-    setEnquiries(prev => [...prev, newData])
-
-  } catch (err) {
-    console.error("Add enquiry error:", err)
+      return true
+    } catch (err) {
+      console.error("Add enquiry error:", err)
+      return false
+    }
   }
-}
 
   const updateEnquiry = async (id, enquiry) => {
-  try {
-    const res = await fetch(`http://localhost:8080/api/admin/enquiries/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(enquiry)
-    })
+    try {
 
-    if (!res.ok) throw new Error("Failed to update enquiry")
+      // ❌ BLOCK WRONG LOGIC
+      if (enquiry.status === "Converted") {
+        console.warn("❌ Cannot manually set Converted")
+        return false
+      }
 
-    const updated = await res.json()
+      const res = await fetch(`http://localhost:8080/api/admin/enquiries/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(enquiry)
+      })
 
-    // ✅ instant UI update (NO DELAY)
-    setEnquiries(prev =>
-      prev.map(e => (e.id === id ? updated : e))
-    )
+      if (!res.ok) throw new Error("Failed to update enquiry")
 
-    // ✅ ensure the source of truth is synced after updating enquiry status
-    await getAllEnquiries()
+      const updated = await res.json()
 
-  } catch (err) {
-    console.error("Update enquiry error:", err)
+      setEnquiries(prev =>
+        prev.map(e => (e.id === id ? updated : e))
+      )
+
+      await getAllEnquiries()
+      return true
+
+    } catch (err) {
+      console.error("Update enquiry error:", err)
+      return false
+    }
   }
-}
+
+  const deleteEnquiry = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/admin/enquiries/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (!res.ok) throw new Error("Failed to delete enquiry")
+
+      setEnquiries(prev => prev.filter(e => e.id !== id))
+
+    } catch (err) {
+      console.error("Delete enquiry error:", err)
+    }
+  }
 
   // ================= CALL RECORDS =================
   const getAllCallRecords = async () => {
     try {
       if (!token) return
-
       const res = await fetch('http://localhost:8080/api/counselor/calls', {
         headers: { Authorization: `Bearer ${token}` }
       })
-
       const data = await res.json()
       setCallRecords(data || [])
-
     } catch (err) {
-      console.error("Call records error:", err)
+      console.error("Call error:", err)
     }
   }
 
-  // ✅ FIXED
   const addCallRecord = async (call) => {
     try {
       const res = await fetch('http://localhost:8080/api/counselor/calls', {
@@ -139,35 +151,30 @@ const addEnquiry = async (enquiry) => {
         body: JSON.stringify(call)
       })
 
-      if (!res.ok) throw new Error("Failed to save call record")
+      if (!res.ok) throw new Error("Failed to save call")
 
       await getAllCallRecords()
-      return true   // ✅ IMPORTANT
-
+      return true
     } catch (err) {
-      console.error("Add call record error:", err)
-      return false  // ✅ IMPORTANT
+      console.error("Call error:", err)
+      return false
     }
   }
 
-  // ================= FOLLOW-UPS =================
+  // ================= FOLLOWUPS =================
   const getAllFollowups = async () => {
     try {
       if (!token) return
-
       const res = await fetch('http://localhost:8080/api/counselor/followups', {
         headers: { Authorization: `Bearer ${token}` }
       })
-
       const data = await res.json()
       setFollowups(data || [])
-
     } catch (err) {
-      console.error("Followups error:", err)
+      console.error("Followup error:", err)
     }
   }
 
-  // ✅ FIXED
   const addFollowup = async (followup) => {
     try {
       const res = await fetch('http://localhost:8080/api/counselor/followups', {
@@ -182,185 +189,118 @@ const addEnquiry = async (enquiry) => {
       if (!res.ok) throw new Error("Failed to save followup")
 
       await getAllFollowups()
-      return true   // ✅ IMPORTANT
-
+      return true
     } catch (err) {
-      console.error("Add followup error:", err)
-      return false  // ✅ IMPORTANT
-    }
-  }
-
-  const updateFollowup = async (id, updatedData) => {
-    try {
-      const res = await fetch(`http://localhost:8080/api/counselor/followups/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(updatedData)
-      })
-
-      if (!res.ok) throw new Error("Failed to update followup")
-
-      await getAllFollowups()
-
-    } catch (err) {
-      console.error("Update followup error:", err)
+      console.error("Followup error:", err)
+      return false
     }
   }
 
   // ================= COURSES =================
-
-const getAllCourses = async () => {
-  try {
-    if (!token) return
-
-    const res = await fetch('http://localhost:8080/api/admin/courses', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    const data = await res.json()
-    setCourses(data || [])
-
-  } catch (err) {
-    console.error("Courses error:", err)
+  const getAllCourses = async () => {
+    try {
+      if (!token) return
+      const res = await fetch('http://localhost:8080/api/admin/courses', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await res.json()
+      setCourses(data || [])
+    } catch (err) {
+      console.error("Courses error:", err)
+    }
   }
+
+  const addCourse = async (course) => {
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/courses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(course)
+      })
+      if (!res.ok) throw new Error("Failed")
+      await getAllCourses()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  // ================= LISTS =================
+  const getAllLists = async () => {
+    try {
+      if (!token) return
+      const res = await fetch('http://localhost:8080/api/admin/lists', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await res.json()
+      setLists(data || [])
+    } catch (err) {
+      console.error("Lists error:", err)
+    }
+  }
+
+  const addList = async (list) => {
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/lists', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(list)
+      })
+      if (!res.ok) throw new Error("Failed")
+      await getAllLists()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  // ================= ADMISSIONS =================
+  const getAllAdmissions = async () => {
+    try {
+      if (!token) return
+      const res = await fetch('http://localhost:8080/api/admin/admissions', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await res.json()
+      setAdmissions(data || [])
+    } catch (err) {
+      console.error("Admissions error:", err)
+    }
+  }
+
+  const addAdmission = async (admission) => {
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/admissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(admission)
+      })
+
+      if (!res.ok) {
+  const errorText = await res.text()
+  console.error("SERVER ERROR:", errorText)
+  throw new Error(errorText)
 }
 
-const addCourse = async (course) => {
-  try {
-    const res = await fetch('http://localhost:8080/api/admin/courses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(course)
-    })
+      const newData = await res.json()
+      setAdmissions(prev => [...prev, newData])
 
-    if (!res.ok) throw new Error("Failed to add course")
+      // 🔥 IMPORTANT: sync enquiry status
+      await getAllEnquiries()
 
-    await getAllCourses()
-
-  } catch (err) {
-    console.error("Add course error:", err)
+      return true
+    } catch (err) {
+      console.error("Admission error:", err)
+      return false
+    }
   }
-}
-
-const updateCourse = async (id, course) => {
-  try {
-    const res = await fetch(`http://localhost:8080/api/admin/courses/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(course)
-    })
-
-    if (!res.ok) throw new Error("Failed to update course")
-
-    await getAllCourses()
-
-  } catch (err) {
-    console.error("Update course error:", err)
-  }
-}
-
-const deleteCourse = async (id) => {
-  try {
-    const res = await fetch(`http://localhost:8080/api/admin/courses/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-
-    if (!res.ok) throw new Error("Failed to delete course")
-
-    await getAllCourses()
-
-  } catch (err) {
-    console.error("Delete course error:", err)
-  }
-}
-
-// ================= LISTS =================
-
-const getAllLists = async () => {
-  try {
-    if (!token) return
-
-    const res = await fetch('http://localhost:8080/api/admin/lists', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    const data = await res.json()
-    setLists(data || [])
-
-  } catch (err) {
-    console.error("Lists error:", err)
-  }
-}
-
-const addList = async (list) => {
-  try {
-    const res = await fetch('http://localhost:8080/api/admin/lists', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(list)
-    })
-
-    if (!res.ok) throw new Error("Failed to add list")
-
-    await getAllLists()
-
-  } catch (err) {
-    console.error("Add list error:", err)
-  }
-}
-
-const updateList = async (id, list) => {
-  try {
-    const res = await fetch(`http://localhost:8080/api/admin/lists/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(list)
-    })
-
-    if (!res.ok) throw new Error("Failed to update list")
-
-    await getAllLists()
-
-  } catch (err) {
-    console.error("Update list error:", err)
-  }
-}
-
-const deleteList = async (id) => {
-  try {
-    const res = await fetch(`http://localhost:8080/api/admin/lists/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-
-    if (!res.ok) throw new Error("Failed to delete list")
-
-    await getAllLists()
-
-  } catch (err) {
-    console.error("Delete list error:", err)
-  }
-}
 
   // ================= INIT =================
   useEffect(() => {
@@ -371,53 +311,43 @@ const deleteList = async (id) => {
       getAllFollowups()
       getAllCourses()
       getAllLists()
-
-      // 🔥 AUTO SYNC WITH COUNSELOR
-    const interval = setInterval(() => {
-      getAllEnquiries()
-    }, 2000) // every 2 sec
-
-    return () => clearInterval(interval)
-    
+      getAllAdmissions()
     }
   }, [authReady, token])
 
   return (
-    <DataContext.Provider
-      value={{
-        users,
-        enquiries,
-        callRecords,
-        followups,
-        loading,
-        error,
+    <DataContext.Provider value={{
+      users,
+      enquiries,
+      callRecords,
+      followups,
+      courses,
+      lists,
+      admissions,
+      loading,
+      error,
 
-        getAllUsers,
-        getAllEnquiries,
+      getAllUsers,
+      getAllEnquiries,
+      addEnquiry,
+      updateEnquiry,
+      deleteEnquiry,
 
-        addEnquiry,
-        updateEnquiry,
+      getAllCallRecords,
+      addCallRecord,
 
-        getAllCallRecords,
-        addCallRecord,
+      getAllFollowups,
+      addFollowup,
 
-        courses,
-        getAllCourses,
-        addCourse,
-        updateCourse,
-        deleteCourse,
+      getAllCourses,
+      addCourse,
 
-        lists,
-        getAllLists,
-        addList,
-        updateList,
-        deleteList,
+      getAllLists,
+      addList,
 
-        getAllFollowups,
-        addFollowup,
-        updateFollowup
-      }}
-    >
+      getAllAdmissions,
+      addAdmission
+    }}>
       {children}
     </DataContext.Provider>
   )

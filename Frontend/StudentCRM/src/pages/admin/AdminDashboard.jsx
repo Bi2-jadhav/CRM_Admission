@@ -18,6 +18,7 @@ import ManageLists from './ManageLists'
 import ManageLeads from './ManageLeads'
 import ManageCourses from './ManageCourses'
 import Reports from './Reports'
+import Admissions from './Admissions'
 
 import './AdminDashboard.css'
 
@@ -65,6 +66,7 @@ function AdminDashboard() {
               !isActive('lists') &&
               !isActive('leads') &&
               !isActive('courses') &&
+
               !isActive('reports')
                 ? 'active'
                 : ''
@@ -107,6 +109,14 @@ function AdminDashboard() {
           </Link>
 
           <Link
+            to="/dashboard/admin/Admissions"
+            className={`nav-link ${isActive('Admissions') ? 'active' : ''}`}
+          >
+            <BookOpen size={20} />
+            {sidebarOpen && <span>Manage Admission</span>}
+          </Link>
+
+          <Link
             to="/dashboard/admin/reports"
             className={`nav-link ${isActive('reports') ? 'active' : ''}`}
           >
@@ -144,6 +154,7 @@ function AdminDashboard() {
             <Route path="/lists" element={<ManageLists />} />
             <Route path="/leads" element={<ManageLeads />} />
             <Route path="/courses" element={<ManageCourses />} />
+            <Route path="/Admissions" element={<Admissions />} />
             <Route path="/reports" element={<Reports />} />
           </Routes>
         </div>

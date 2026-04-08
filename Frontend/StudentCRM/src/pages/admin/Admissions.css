@@ -1,0 +1,102 @@
+/* MAIN CONTAINER */
+.admissions-container {
+  padding: 1.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+/* HEADER */
+.admissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admissions-header h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* GRID */
+.admissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+/* CARD */
+.admission-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: all 0.25s ease;
+  border: 1px solid #f1f5f9;
+}
+
+.admission-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* TITLE */
+.admission-card h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+/* DETAILS */
+.admission-card p {
+  font-size: 0.9rem;
+  color: #475569;
+  margin: 4px 0;
+}
+
+/* BADGES */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* PAYMENT STATUS COLORS */
+.paid {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.partial {
+  background: #fef9c3;
+  color: #ca8a04;
+}
+
+.pending {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  margin-top: 3rem;
+  color: #64748b;
+  font-size: 1rem;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

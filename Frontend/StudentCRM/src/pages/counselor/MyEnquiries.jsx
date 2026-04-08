@@ -6,7 +6,16 @@ import './MyEnquiries.css'
 
 function MyEnquiries() {
 
-  const { enquiries = [], users = [], callRecords = [], followups = [], addEnquiry, updateEnquiry, getAllEnquiries, error } = useData()
+  const {
+    enquiries = [],
+    users = [],
+    addEnquiry,
+    updateEnquiry,
+    getAllEnquiries,
+    addAdmission,
+    error
+  } = useData()
+
   const { user } = useAuth()
 
   const [showForm, setShowForm] = useState(false)
@@ -19,20 +28,20 @@ function MyEnquiries() {
     email: '',
     courseInterested: 'MBA',
     source: 'Inbound',
-    status: 'New',
+    stage: 'New',              // ✅ FIXED
     counselorId: ''
   })
 
   const counselors = users.filter(u => u.role === 'COUNSELOR')
 
-  // ✅ Fetch fresh data on component mount
+  // ✅ Fetch data
   useEffect(() => {
     if (user?.id) {
       getAllEnquiries()
     }
-  }, [user?.id, getAllEnquiries])
+  }, [user?.id])
 
-  // ✅ FIXED (consistent ID comparison)
+  // ✅ Only my enquiries
   const myEnquiries = enquiries.filter(
     (e) => String(e.assignedCounselorId) === String(user?.id)
   )
@@ -43,6 +52,31 @@ function MyEnquiries() {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  // 🔥 CONVERT FUNCTION (FIXED)
+  const handleConvert = async (enquiry) => {
+
+    const payload = {
+      enquiryId: enquiry.id,
+      studentName: enquiry.studentName,
+      courseSelected: enquiry.courseInterested,
+      fees: 0,
+      feesPaid: 0,
+      paymentStatus: 'Pending',
+      admissionDate: new Date().toISOString().split('T')[0]
+    }
+
+    const success = await addAdmission(payload)
+
+    if (success) {
+      alert("✅ Converted to Admission")
+
+      // 🔥 IMPORTANT FIX
+      await getAllEnquiries()
+    } else {
+      alert("❌ Conversion failed")
+    }
   }
 
   const handleFileUpload = async (e) => {
@@ -66,7 +100,8 @@ function MyEnquiries() {
 
       alert(await res.text())
 
-      // ✅ Polling will refresh data automatically
+      // 🔥 Refresh after upload
+      await getAllEnquiries()
 
     } catch (err) {
       alert("Upload failed ❌: " + err.message)
@@ -85,6 +120,7 @@ function MyEnquiries() {
 
     const payload = {
       ...formData,
+      stage: formData.stage,   // ✅ FIXED
       assignedCounselorId: parseInt(formData.counselorId),
       createdDate: new Date().toISOString().split('T')[0]
     }
@@ -96,7 +132,8 @@ function MyEnquiries() {
       await addEnquiry(payload)
     }
 
-    // ✅ Polling will refresh data automatically
+    // 🔥 Refresh after add/update
+    await getAllEnquiries()
 
     setFormData({
       studentName: '',
@@ -104,7 +141,7 @@ function MyEnquiries() {
       email: '',
       courseInterested: 'MBA',
       source: 'Inbound',
-      status: 'New',
+      stage: 'New',
       counselorId: ''
     })
 
@@ -114,6 +151,7 @@ function MyEnquiries() {
   const handleEdit = (enquiry) => {
     setFormData({
       ...enquiry,
+      stage: enquiry.stage || 'New',   // ✅ FIXED
       counselorId: enquiry.assignedCounselorId || ''
     })
     setEditingId(enquiry.id)
@@ -127,7 +165,7 @@ function MyEnquiries() {
         <h2>My Leads</h2>
 
         <div style={{ display: "flex", gap: "10px" }}>
-          
+
           <label className="btn-secondary">
             <Upload size={16} />
             Import Excel
@@ -151,7 +189,7 @@ function MyEnquiries() {
       </div>
 
       {error && (
-        <div className="error-message" style={{ color: 'red', margin: '10px 0', padding: '10px', backgroundColor: '#fee', border: '1px solid #fcc' }}>
+        <div className="error-message">
           Error loading enquiries: {error}
         </div>
       )}
@@ -182,9 +220,10 @@ function MyEnquiries() {
             <option>Website</option>
           </select>
 
+          {/* ✅ FIXED */}
           <select
-            name="status"
-            value={formData.status}
+            name="stage"
+            value={formData.stage}
             onChange={handleInputChange}
           >
             {statuses.map(s => <option key={s}>{s}</option>)}
@@ -218,10 +257,6 @@ function MyEnquiries() {
         ) : (
           myEnquiries.map(enquiry => {
 
-            const counselor = users.find(
-              u => String(u.id) === String(enquiry.assignedCounselorId)
-            )
-
             return (
               <div
                 key={enquiry.id}
@@ -231,7 +266,8 @@ function MyEnquiries() {
                 }
               >
 
-                <span className="lead-status">{enquiry.status}</span>
+                {/* ✅ FIXED */}
+                <span className="lead-status">{enquiry.stage}</span>
 
                 <h4>{enquiry.studentName}</h4>
                 <p>{enquiry.phone}</p>
@@ -241,44 +277,28 @@ function MyEnquiries() {
 
                     <p><b>Email:</b> {enquiry.email || 'N/A'}</p>
                     <p><b>Course:</b> {enquiry.courseInterested}</p>
-                    <p><b>Status:</b> {enquiry.status}</p>
-
-                    <p>
-                      <b>Counselor:</b> {counselor?.name || counselor?.email || 'N/A'}
-                    </p>
-
-                    {/* ✅ Enhanced: Activity Summary */}
-                    <div className="activity-summary">
-                      <p><b>Total Calls:</b> {callRecords.filter(c => c.enquiryId === enquiry.id).length}</p>
-                      <p><b>Pending Follow-ups:</b> {followups.filter(f => f.enquiryId === enquiry.id && f.status === 'Pending').length}</p>
-                    </div>
-
-                    {/* ✅ Enhanced: Latest Notes */}
-                    {(() => {
-                      const enquiryCalls = callRecords.filter(c => c.enquiryId === enquiry.id)
-                      const enquiryFollowups = followups.filter(f => f.enquiryId === enquiry.id)
-                      const latestCall = enquiryCalls.sort((a, b) => new Date(b.callDate) - new Date(a.callDate))[0]
-                      const latestFollowup = enquiryFollowups.sort((a, b) => new Date(b.followupDate) - new Date(a.followupDate))[0]
-
-                      return (
-                        <div className="latest-notes">
-                          {latestCall && (
-                            <p><b>Latest Call:</b> {latestCall.remarks || 'No remarks'}</p>
-                          )}
-                          {latestFollowup && (
-                            <p><b>Latest Follow-up:</b> {latestFollowup.remarks || 'No remarks'}</p>
-                          )}
-                        </div>
-                      )
-                    })()}
 
                     <div className="enquiry-actions">
+
                       <button onClick={(e) => {
                         e.stopPropagation()
                         handleEdit(enquiry)
                       }}>
                         Edit
                       </button>
+
+                      {/* ✅ FIXED */}
+                      {enquiry.stage !== "Converted" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleConvert(enquiry)
+                          }}
+                        >
+                          Convert
+                        </button>
+                      )}
+
                     </div>
 
                   </div>

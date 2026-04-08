@@ -1,5 +1,4 @@
-
-        package com.adminService.AdminService.Service;
+package com.adminService.AdminService.Service;
 
 import com.adminService.AdminService.Entity.Enquiry;
 import com.adminService.AdminService.Repository.EnquiryRepository;
@@ -30,10 +29,9 @@ public class EnquiryService {
         return repo.findByAssignedCounselorId(counselorId);
     }
 
-    // 🔥 FIXED CREATE METHOD
+    // ✅ CREATE
     public Enquiry create(Enquiry enquiry) {
 
-        // ✅ IMPORTANT VALIDATION
         if (enquiry.getAssignedCounselorId() == null) {
             throw new RuntimeException("Counselor must be assigned");
         }
@@ -45,6 +43,7 @@ public class EnquiryService {
         return repo.save(enquiry);
     }
 
+    // ✅ UPDATE (FIXED & CLEAN)
     public Enquiry update(Long id, Enquiry updated) {
         Enquiry existing = getById(id);
 
@@ -63,17 +62,9 @@ public class EnquiryService {
         if (updated.getSource() != null)
             existing.setSource(updated.getSource());
 
-        // ✅ CRITICAL FIX
-        // ✅ Accept BOTH stage & status (robust fix)
-        if (updated.getStage() != null) {
+        // 🔥 ONLY ONE FIELD (IMPORTANT)
+        if (updated.getStage() != null)
             existing.setStage(updated.getStage());
-            existing.setStatus(updated.getStage());
-        }
-
-        if (updated.getStatus() != null) {
-            existing.setStatus(updated.getStatus());
-            existing.setStage(updated.getStatus());
-        }
 
         if (updated.getAssignedCounselorId() != null)
             existing.setAssignedCounselorId(updated.getAssignedCounselorId());
@@ -85,4 +76,3 @@ public class EnquiryService {
         repo.deleteById(id);
     }
 }
-

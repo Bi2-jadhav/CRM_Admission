@@ -36,7 +36,7 @@ function ManageLeads() {
   })
 
   const sources = ['Meta', 'Website', 'Google', 'Instagram', 'Walkin', 'Inbound']
-  const stages = ['New', 'Called', 'Follow-up', 'Closed', 'Converted']
+  const stages = ['New', 'Called', 'Follow-up', 'Closed']
   const courses = ['MBA', 'MCA', 'BCA', 'B.Tech', 'M.Tech', 'Other']
 
   const handleInputChange = (e) => {
