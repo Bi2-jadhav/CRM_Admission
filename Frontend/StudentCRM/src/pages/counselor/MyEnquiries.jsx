@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useData } from '../../Components/context/DataContext'
 import { useAuth } from '../../Components/context/AuthContext'
 import { Plus, Upload } from 'lucide-react'
@@ -6,7 +6,7 @@ import './MyEnquiries.css'
 
 function MyEnquiries() {
 
-  const { enquiries = [], users = [], addEnquiry, updateEnquiry, getAllEnquiries } = useData()
+  const { enquiries = [], users = [], callRecords = [], followups = [], addEnquiry, updateEnquiry, getAllEnquiries, error } = useData()
   const { user } = useAuth()
 
   const [showForm, setShowForm] = useState(false)
@@ -19,20 +19,25 @@ function MyEnquiries() {
     email: '',
     courseInterested: 'MBA',
     source: 'Inbound',
-    stage: 'New',
     status: 'New',
     counselorId: ''
   })
 
   const counselors = users.filter(u => u.role === 'COUNSELOR')
 
+  // ✅ Fetch fresh data on component mount
+  useEffect(() => {
+    if (user?.id) {
+      getAllEnquiries()
+    }
+  }, [user?.id, getAllEnquiries])
+
+  // ✅ FIXED (consistent ID comparison)
   const myEnquiries = enquiries.filter(
     (e) => String(e.assignedCounselorId) === String(user?.id)
   )
 
   const courses = ['MBA', 'MCA', 'BCA', 'B.Tech', 'M.Tech', 'Other']
-
-  // ✅ NEW STATUS LIST
   const statuses = ['New', 'Called', 'Follow-up', 'Closed', 'Converted']
 
   const handleInputChange = (e) => {
@@ -59,13 +64,11 @@ function MyEnquiries() {
         throw new Error(errorText)
       }
 
-      const msg = await res.text()
-      alert(msg)
+      alert(await res.text())
 
-      await getAllEnquiries()
+      // ✅ Polling will refresh data automatically
 
     } catch (err) {
-      console.error(err)
       alert("Upload failed ❌: " + err.message)
     }
 
@@ -93,13 +96,14 @@ function MyEnquiries() {
       await addEnquiry(payload)
     }
 
+    // ✅ Polling will refresh data automatically
+
     setFormData({
       studentName: '',
       phone: '',
       email: '',
       courseInterested: 'MBA',
       source: 'Inbound',
-      stage: 'New',
       status: 'New',
       counselorId: ''
     })
@@ -146,7 +150,12 @@ function MyEnquiries() {
         </div>
       </div>
 
-      {/* FORM */}
+      {error && (
+        <div className="error-message" style={{ color: 'red', margin: '10px 0', padding: '10px', backgroundColor: '#fee', border: '1px solid #fcc' }}>
+          Error loading enquiries: {error}
+        </div>
+      )}
+
       {showForm && (
         <form onSubmit={handleSubmit} className="enquiry-form">
 
@@ -173,7 +182,6 @@ function MyEnquiries() {
             <option>Website</option>
           </select>
 
-          {/* ✅ NEW STATUS DROPDOWN */}
           <select
             name="status"
             value={formData.status}
@@ -203,7 +211,6 @@ function MyEnquiries() {
         </form>
       )}
 
-      {/* LIST */}
       <div className="enquiries-grid">
 
         {myEnquiries.length === 0 ? (
@@ -224,7 +231,6 @@ function MyEnquiries() {
                 }
               >
 
-                {/* ✅ SHOW STATUS */}
                 <span className="lead-status">{enquiry.status}</span>
 
                 <h4>{enquiry.studentName}</h4>
@@ -240,6 +246,31 @@ function MyEnquiries() {
                     <p>
                       <b>Counselor:</b> {counselor?.name || counselor?.email || 'N/A'}
                     </p>
+
+                    {/* ✅ Enhanced: Activity Summary */}
+                    <div className="activity-summary">
+                      <p><b>Total Calls:</b> {callRecords.filter(c => c.enquiryId === enquiry.id).length}</p>
+                      <p><b>Pending Follow-ups:</b> {followups.filter(f => f.enquiryId === enquiry.id && f.status === 'Pending').length}</p>
+                    </div>
+
+                    {/* ✅ Enhanced: Latest Notes */}
+                    {(() => {
+                      const enquiryCalls = callRecords.filter(c => c.enquiryId === enquiry.id)
+                      const enquiryFollowups = followups.filter(f => f.enquiryId === enquiry.id)
+                      const latestCall = enquiryCalls.sort((a, b) => new Date(b.callDate) - new Date(a.callDate))[0]
+                      const latestFollowup = enquiryFollowups.sort((a, b) => new Date(b.followupDate) - new Date(a.followupDate))[0]
+
+                      return (
+                        <div className="latest-notes">
+                          {latestCall && (
+                            <p><b>Latest Call:</b> {latestCall.remarks || 'No remarks'}</p>
+                          )}
+                          {latestFollowup && (
+                            <p><b>Latest Follow-up:</b> {latestFollowup.remarks || 'No remarks'}</p>
+                          )}
+                        </div>
+                      )
+                    })()}
 
                     <div className="enquiry-actions">
                       <button onClick={(e) => {

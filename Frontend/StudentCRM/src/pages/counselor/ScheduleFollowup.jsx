@@ -13,8 +13,8 @@ function ScheduleFollowup() {
   const followups = Array.isArray(data.followups) ? data.followups : []
   const users = Array.isArray(data.users) ? data.users : []
 
-  // ✅ ADDED updateEnquiry
-  const { addFollowup, updateFollowup, updateEnquiry, loading } = data
+    // ✅ Frontend handles enquiry status updates
+  const { addFollowup, updateFollowup, updateEnquiry, getAllEnquiries, loading } = data
 
   const [showForm, setShowForm] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
@@ -63,11 +63,14 @@ function ScheduleFollowup() {
       remarks: formData.remarks
     })
 
-    // ✅ UPDATE ENQUIRY STATUS
+    // ✅ Update enquiry status to "Follow-up"
     if (success) {
       await updateEnquiry(enquiryId, {
         status: 'Follow-up'
       })
+
+      // ✅ Refresh enquiries so MyEnquiries shows the updated status
+      await getAllEnquiries()
     }
 
     setFormData({
@@ -84,10 +87,13 @@ function ScheduleFollowup() {
   const handleMarkComplete = async (id, enquiryId) => {
     await updateFollowup(id, { status: 'Completed' })
 
-    // ✅ UPDATE ENQUIRY STATUS
+    // ✅ Update enquiry status to "Closed"
     await updateEnquiry(enquiryId, {
       status: 'Closed'
     })
+
+    // ✅ Refresh enquiries so MyEnquiries reflects closed status
+    await getAllEnquiries()
   }
 
   return (

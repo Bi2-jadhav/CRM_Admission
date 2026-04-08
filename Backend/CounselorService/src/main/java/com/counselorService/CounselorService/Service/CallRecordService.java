@@ -41,11 +41,11 @@ public class CallRecordService {
 
         try {
             // 2️⃣ CALL ADMIN SERVICE API
-            String url = "http://localhost:8080/api/enquiries/" + record.getEnquiryId();
+            String url = "http://localhost:8080/api/admin/enquiries/" + record.getEnquiryId();
 
             restTemplate.put(
                     url,
-                    Map.of("status", "Called") // 🔥 ONLY send status
+                    Map.of("stage", "Called") // 🔥 ONLY send status
             );
 
         } catch (Exception e) {

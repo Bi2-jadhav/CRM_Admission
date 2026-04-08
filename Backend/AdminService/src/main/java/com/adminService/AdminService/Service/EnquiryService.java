@@ -64,9 +64,15 @@ public class EnquiryService {
             existing.setSource(updated.getSource());
 
         // ✅ CRITICAL FIX
+        // ✅ Accept BOTH stage & status (robust fix)
         if (updated.getStage() != null) {
             existing.setStage(updated.getStage());
-            existing.setStatus(updated.getStage()); // 🔥 sync both
+            existing.setStatus(updated.getStage());
+        }
+
+        if (updated.getStatus() != null) {
+            existing.setStatus(updated.getStatus());
+            existing.setStage(updated.getStatus());
         }
 
         if (updated.getAssignedCounselorId() != null)

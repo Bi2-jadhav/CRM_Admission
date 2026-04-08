@@ -12,6 +12,7 @@ export const DataProvider = ({ children }) => {
   const [callRecords, setCallRecords] = useState([])
   const [followups, setFollowups] = useState([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const { token, authReady } = useAuth()
 
@@ -44,11 +45,17 @@ export const DataProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` }
       })
 
+      if (!res.ok) {
+        throw new Error(`Failed to fetch enquiries: ${res.status}`)
+      }
+
       const data = await res.json()
       setEnquiries(data || [])
+      setError(null) // Clear any previous errors
 
     } catch (err) {
       console.error("Enquiry error:", err)
+      setError(err.message)
     }
   }
 
@@ -94,6 +101,9 @@ const addEnquiry = async (enquiry) => {
     setEnquiries(prev =>
       prev.map(e => (e.id === id ? updated : e))
     )
+
+    // ✅ ensure the source of truth is synced after updating enquiry status
+    await getAllEnquiries()
 
   } catch (err) {
     console.error("Update enquiry error:", err)
@@ -380,6 +390,7 @@ const deleteList = async (id) => {
         callRecords,
         followups,
         loading,
+        error,
 
         getAllUsers,
         getAllEnquiries,

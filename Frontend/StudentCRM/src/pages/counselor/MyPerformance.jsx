@@ -14,8 +14,8 @@ function MyPerformance() {
 
   // ✅ FILTER DATA
   const myEnquiries = enquiries.filter(
-    e => e.assignedCounselorId === user.id
-  )
+  e => String(e.assignedCounselorId) === String(user.id)
+)
 
   const myCalls = callRecords.filter(
     c => c.counselorId === user.id

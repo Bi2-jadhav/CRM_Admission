@@ -12,6 +12,8 @@ function AddCallRecord() {
     enquiries = [],
     callRecords = [],
     addCallRecord,
+    updateEnquiry,
+    getAllEnquiries,
     loading
   } = useData()
 
@@ -73,8 +75,13 @@ function AddCallRecord() {
     })
 
     if (success) {
-      // ❌ REMOVED: updateEnquiry call
-      // Backend (Admin Service) now updates status
+      // ✅ Update enquiry status to "Called"
+      await updateEnquiry(enquiryId, {
+        stage: 'Called'
+      })
+
+      // ✅ Refresh enquiries to ensure UI reflects the latest status
+      await getAllEnquiries()
 
       setFormData({
         enquiryId: '',
