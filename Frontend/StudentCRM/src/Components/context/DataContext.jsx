@@ -6,7 +6,7 @@ const DataContext = createContext()
 export const DataProvider = ({ children }) => {
 
   const [users, setUsers] = useState([])
-  const [lists, setLists] = useState([])
+  const [lists, setLists] = useState([])   // ✅ SINGLE SOURCE
   const [courses, setCourses] = useState([])
   const [enquiries, setEnquiries] = useState([])
   const [callRecords, setCallRecords] = useState([])
@@ -21,11 +21,14 @@ export const DataProvider = ({ children }) => {
   const getAllUsers = async () => {
     try {
       if (!token) return
+
       const res = await fetch('http://localhost:8080/api/auth/users', {
         headers: { Authorization: `Bearer ${token}` }
       })
+
       const data = await res.json()
       setUsers(data || [])
+
     } catch (err) {
       console.error("Users error:", err)
     }
@@ -78,8 +81,7 @@ export const DataProvider = ({ children }) => {
   const updateEnquiry = async (id, enquiry) => {
     try {
 
-      // ❌ BLOCK WRONG LOGIC
-      if (enquiry.status === "Converted") {
+      if (enquiry.stage === "Converted") {
         console.warn("❌ Cannot manually set Converted")
         return false
       }
@@ -101,7 +103,6 @@ export const DataProvider = ({ children }) => {
         prev.map(e => (e.id === id ? updated : e))
       )
 
-      await getAllEnquiries()
       return true
 
     } catch (err) {
@@ -130,11 +131,14 @@ export const DataProvider = ({ children }) => {
   const getAllCallRecords = async () => {
     try {
       if (!token) return
+
       const res = await fetch('http://localhost:8080/api/counselor/calls', {
         headers: { Authorization: `Bearer ${token}` }
       })
+
       const data = await res.json()
       setCallRecords(data || [])
+
     } catch (err) {
       console.error("Call error:", err)
     }
@@ -155,6 +159,7 @@ export const DataProvider = ({ children }) => {
 
       await getAllCallRecords()
       return true
+
     } catch (err) {
       console.error("Call error:", err)
       return false
@@ -165,11 +170,14 @@ export const DataProvider = ({ children }) => {
   const getAllFollowups = async () => {
     try {
       if (!token) return
+
       const res = await fetch('http://localhost:8080/api/counselor/followups', {
         headers: { Authorization: `Bearer ${token}` }
       })
+
       const data = await res.json()
       setFollowups(data || [])
+
     } catch (err) {
       console.error("Followup error:", err)
     }
@@ -190,6 +198,7 @@ export const DataProvider = ({ children }) => {
 
       await getAllFollowups()
       return true
+
     } catch (err) {
       console.error("Followup error:", err)
       return false
@@ -200,11 +209,14 @@ export const DataProvider = ({ children }) => {
   const getAllCourses = async () => {
     try {
       if (!token) return
+
       const res = await fetch('http://localhost:8080/api/admin/courses', {
         headers: { Authorization: `Bearer ${token}` }
       })
+
       const data = await res.json()
       setCourses(data || [])
+
     } catch (err) {
       console.error("Courses error:", err)
     }
@@ -220,22 +232,32 @@ export const DataProvider = ({ children }) => {
         },
         body: JSON.stringify(course)
       })
+
       if (!res.ok) throw new Error("Failed")
+
       await getAllCourses()
+
     } catch (err) {
       console.error(err)
     }
   }
 
-  // ================= LISTS =================
+  // ================= LISTS (LEAD SOURCE) =================
   const getAllLists = async () => {
     try {
       if (!token) return
+
       const res = await fetch('http://localhost:8080/api/admin/lists', {
         headers: { Authorization: `Bearer ${token}` }
       })
+
+      if (!res.ok) throw new Error("Failed to fetch lists")
+
       const data = await res.json()
+      console.log("✅ Lead Sources:", data)
+
       setLists(data || [])
+
     } catch (err) {
       console.error("Lists error:", err)
     }
@@ -251,8 +273,11 @@ export const DataProvider = ({ children }) => {
         },
         body: JSON.stringify(list)
       })
+
       if (!res.ok) throw new Error("Failed")
+
       await getAllLists()
+
     } catch (err) {
       console.error(err)
     }
@@ -262,11 +287,14 @@ export const DataProvider = ({ children }) => {
   const getAllAdmissions = async () => {
     try {
       if (!token) return
+
       const res = await fetch('http://localhost:8080/api/admin/admissions', {
         headers: { Authorization: `Bearer ${token}` }
       })
+
       const data = await res.json()
       setAdmissions(data || [])
+
     } catch (err) {
       console.error("Admissions error:", err)
     }
@@ -284,18 +312,17 @@ export const DataProvider = ({ children }) => {
       })
 
       if (!res.ok) {
-  const errorText = await res.text()
-  console.error("SERVER ERROR:", errorText)
-  throw new Error(errorText)
-}
+        const errorText = await res.text()
+        throw new Error(errorText)
+      }
 
       const newData = await res.json()
       setAdmissions(prev => [...prev, newData])
 
-      // 🔥 IMPORTANT: sync enquiry status
-      await getAllEnquiries()
+      await getAllEnquiries() // sync
 
       return true
+
     } catch (err) {
       console.error("Admission error:", err)
       return false
@@ -310,7 +337,7 @@ export const DataProvider = ({ children }) => {
       getAllCallRecords()
       getAllFollowups()
       getAllCourses()
-      getAllLists()
+      getAllLists()       // ✅ IMPORTANT
       getAllAdmissions()
     }
   }, [authReady, token])
@@ -322,7 +349,7 @@ export const DataProvider = ({ children }) => {
       callRecords,
       followups,
       courses,
-      lists,
+      lists,              // ✅ USE THIS
       admissions,
       loading,
       error,

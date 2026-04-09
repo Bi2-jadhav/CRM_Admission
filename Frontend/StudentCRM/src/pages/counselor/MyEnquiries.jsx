@@ -9,9 +9,12 @@ function MyEnquiries() {
   const {
     enquiries = [],
     users = [],
+    courses = [],
+    lists = [],                 // ✅ USE THIS (FIXED)
     addEnquiry,
     updateEnquiry,
     getAllEnquiries,
+    getAllLists,               // ✅ FETCH LISTS
     addAdmission,
     error
   } = useData()
@@ -27,26 +30,26 @@ function MyEnquiries() {
     phone: '',
     email: '',
     courseInterested: 'MBA',
-    source: 'Inbound',
-    stage: 'New',              // ✅ FIXED
+    source: '',                // ✅ FIXED (IMPORTANT)
+    stage: 'New',
     counselorId: ''
   })
 
   const counselors = users.filter(u => u.role === 'COUNSELOR')
 
-  // ✅ Fetch data
+  // ✅ FETCH DATA
   useEffect(() => {
     if (user?.id) {
       getAllEnquiries()
+      getAllLists()            // ✅ IMPORTANT
     }
   }, [user?.id])
 
-  // ✅ Only my enquiries
+  // ✅ FILTER MY ENQUIRIES
   const myEnquiries = enquiries.filter(
     (e) => String(e.assignedCounselorId) === String(user?.id)
   )
 
-  const courses = ['MBA', 'MCA', 'BCA', 'B.Tech', 'M.Tech', 'Other']
   const statuses = ['New', 'Called', 'Follow-up', 'Closed', 'Converted']
 
   const handleInputChange = (e) => {
@@ -54,7 +57,7 @@ function MyEnquiries() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  // 🔥 CONVERT FUNCTION (FIXED)
+  // ✅ CONVERT TO ADMISSION
   const handleConvert = async (enquiry) => {
 
     const payload = {
@@ -71,14 +74,13 @@ function MyEnquiries() {
 
     if (success) {
       alert("✅ Converted to Admission")
-
-      // 🔥 IMPORTANT FIX
       await getAllEnquiries()
     } else {
       alert("❌ Conversion failed")
     }
   }
 
+  // ✅ FILE UPLOAD
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -99,8 +101,6 @@ function MyEnquiries() {
       }
 
       alert(await res.text())
-
-      // 🔥 Refresh after upload
       await getAllEnquiries()
 
     } catch (err) {
@@ -110,6 +110,7 @@ function MyEnquiries() {
     e.target.value = ""
   }
 
+  // ✅ SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -120,7 +121,6 @@ function MyEnquiries() {
 
     const payload = {
       ...formData,
-      stage: formData.stage,   // ✅ FIXED
       assignedCounselorId: parseInt(formData.counselorId),
       createdDate: new Date().toISOString().split('T')[0]
     }
@@ -132,7 +132,6 @@ function MyEnquiries() {
       await addEnquiry(payload)
     }
 
-    // 🔥 Refresh after add/update
     await getAllEnquiries()
 
     setFormData({
@@ -140,7 +139,7 @@ function MyEnquiries() {
       phone: '',
       email: '',
       courseInterested: 'MBA',
-      source: 'Inbound',
+      source: '',              // ✅ RESET FIXED
       stage: 'New',
       counselorId: ''
     })
@@ -151,7 +150,7 @@ function MyEnquiries() {
   const handleEdit = (enquiry) => {
     setFormData({
       ...enquiry,
-      stage: enquiry.stage || 'New',   // ✅ FIXED
+      stage: enquiry.stage || 'New',
       counselorId: enquiry.assignedCounselorId || ''
     })
     setEditingId(enquiry.id)
@@ -165,7 +164,6 @@ function MyEnquiries() {
         <h2>My Leads</h2>
 
         <div style={{ display: "flex", gap: "10px" }}>
-
           <label className="btn-secondary">
             <Upload size={16} />
             Import Excel
@@ -184,7 +182,6 @@ function MyEnquiries() {
             <Plus size={18} />
             {showForm ? 'Cancel' : 'Add Lead'}
           </button>
-
         </div>
       </div>
 
@@ -206,21 +203,47 @@ function MyEnquiries() {
           <input name="email" placeholder="Email"
             value={formData.email} onChange={handleInputChange} />
 
-          <select name="courseInterested"
+          {/* COURSE */}
+          <select
+            name="courseInterested"
             value={formData.courseInterested}
-            onChange={handleInputChange}>
-            {courses.map(c => <option key={c}>{c}</option>)}
+            onChange={handleInputChange}
+          >
+            {courses.length === 0 ? (
+              <option>No Courses Available</option>
+            ) : (
+              courses
+                .filter(c => c.status === "Active")
+                .map(c => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))
+            )}
           </select>
 
-          <select name="source"
+          {/* ✅ LEAD SOURCE FIXED */}
+          <select
+            name="source"
             value={formData.source}
-            onChange={handleInputChange}>
-            <option>Inbound</option>
-            <option>Walkin</option>
-            <option>Website</option>
+            onChange={handleInputChange}
+          >
+            <option value="">Select Lead Source</option>
+
+            {lists.length === 0 ? (
+              <option>No Lead Lists</option>
+            ) : (
+              lists
+                .filter(list => list.status?.toLowerCase() === "active")
+                .map(list => (
+                  <option key={list.id} value={list.name}>
+                    {list.name}
+                  </option>
+                ))
+            )}
           </select>
 
-          {/* ✅ FIXED */}
+          {/* STATUS */}
           <select
             name="stage"
             value={formData.stage}
@@ -229,6 +252,7 @@ function MyEnquiries() {
             {statuses.map(s => <option key={s}>{s}</option>)}
           </select>
 
+          {/* COUNSELOR */}
           <select
             name="counselorId"
             value={formData.counselorId}
@@ -251,64 +275,52 @@ function MyEnquiries() {
       )}
 
       <div className="enquiries-grid">
-
         {myEnquiries.length === 0 ? (
           <div className="empty-state">No leads found</div>
         ) : (
-          myEnquiries.map(enquiry => {
+          myEnquiries.map(enquiry => (
+            <div
+              key={enquiry.id}
+              className="enquiry-card"
+              onClick={() =>
+                setExpandedId(expandedId === enquiry.id ? null : enquiry.id)
+              }
+            >
+              <span className="lead-status">{enquiry.stage}</span>
 
-            return (
-              <div
-                key={enquiry.id}
-                className="enquiry-card"
-                onClick={() =>
-                  setExpandedId(expandedId === enquiry.id ? null : enquiry.id)
-                }
-              >
+              <h4>{enquiry.studentName}</h4>
+              <p>{enquiry.phone}</p>
 
-                {/* ✅ FIXED */}
-                <span className="lead-status">{enquiry.stage}</span>
+              {expandedId === enquiry.id && (
+                <div className="enquiry-details">
+                  <p><b>Email:</b> {enquiry.email || 'N/A'}</p>
+                  <p><b>Course:</b> {enquiry.courseInterested}</p>
 
-                <h4>{enquiry.studentName}</h4>
-                <p>{enquiry.phone}</p>
+                  <div className="enquiry-actions">
+                    <button onClick={(e) => {
+                      e.stopPropagation()
+                      handleEdit(enquiry)
+                    }}>
+                      Edit
+                    </button>
 
-                {expandedId === enquiry.id && (
-                  <div className="enquiry-details">
-
-                    <p><b>Email:</b> {enquiry.email || 'N/A'}</p>
-                    <p><b>Course:</b> {enquiry.courseInterested}</p>
-
-                    <div className="enquiry-actions">
-
-                      <button onClick={(e) => {
-                        e.stopPropagation()
-                        handleEdit(enquiry)
-                      }}>
-                        Edit
+                    {enquiry.stage !== "Converted" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleConvert(enquiry)
+                        }}
+                      >
+                        Convert
                       </button>
-
-                      {/* ✅ FIXED */}
-                      {enquiry.stage !== "Converted" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleConvert(enquiry)
-                          }}
-                        >
-                          Convert
-                        </button>
-                      )}
-
-                    </div>
+                    )}
 
                   </div>
-                )}
-
-              </div>
-            )
-          })
+                </div>
+              )}
+            </div>
+          ))
         )}
-
       </div>
 
     </div>

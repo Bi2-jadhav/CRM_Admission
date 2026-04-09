@@ -10,7 +10,9 @@ function ManageLeads() {
     addEnquiry,
     updateEnquiry,
     deleteEnquiry,
-    users = []
+    users = [],
+    courses = [],     // ✅ FROM BACKEND
+    lists = []        // ✅ FROM BACKEND
   } = useData()
 
   const counselors = users.filter(
@@ -28,16 +30,14 @@ function ManageLeads() {
     studentName: '',
     phone: '',
     email: '',
-    courseInterested: 'MBA',
-    source: 'Meta',
+    courseInterested: '',   // ✅ FIXED
+    source: '',             // ✅ FIXED
     stage: 'New',
     assignedCounselorId: null,
     status: 'New'
   })
 
-  const sources = ['Meta', 'Website', 'Google', 'Instagram', 'Walkin', 'Inbound']
   const stages = ['New', 'Called', 'Follow-up', 'Closed']
-  const courses = ['MBA', 'MCA', 'BCA', 'B.Tech', 'M.Tech', 'Other']
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -69,8 +69,8 @@ function ManageLeads() {
         studentName: '',
         phone: '',
         email: '',
-        courseInterested: 'MBA',
-        source: 'Meta',
+        courseInterested: '',
+        source: '',
         stage: 'New',
         assignedCounselorId: null,
         status: 'New'
@@ -88,8 +88,8 @@ function ManageLeads() {
       studentName: enquiry.studentName || '',
       phone: enquiry.phone || '',
       email: enquiry.email || '',
-      courseInterested: enquiry.courseInterested || 'MBA',
-      source: enquiry.source || 'Meta',
+      courseInterested: enquiry.courseInterested || '',
+      source: enquiry.source || '',
       stage: enquiry.stage || 'New',
       assignedCounselorId: enquiry.assignedCounselorId || null,
       status: enquiry.status || 'New'
@@ -132,7 +132,7 @@ function ManageLeads() {
         </button>
       </div>
 
-      {/* 🔍 FILTERS */}
+      {/* FILTERS */}
       <div className="filters">
         <input
           type="text"
@@ -150,26 +150,88 @@ function ManageLeads() {
       {/* FORM */}
       {showForm && (
         <form onSubmit={handleSubmit} className="lead-form">
-          <input name="studentName" value={formData.studentName} onChange={handleInputChange} placeholder="Student Name" required />
-          <input name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" required />
-          <input name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" />
 
-          <select name="courseInterested" value={formData.courseInterested} onChange={handleInputChange}>
-            {courses.map(c => <option key={c}>{c}</option>)}
+          <input
+            name="studentName"
+            value={formData.studentName}
+            onChange={handleInputChange}
+            placeholder="Student Name"
+            required
+          />
+
+          <input
+            name="phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+            placeholder="Phone Number"
+            required
+          />
+
+          <input
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            placeholder="Email"
+          />
+
+          {/* ✅ COURSE DROPDOWN (FROM ADMIN) */}
+          <select
+            name="courseInterested"
+            value={formData.courseInterested}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Select Course</option>
+
+            {courses
+              .filter(c => c.status?.toLowerCase() === "active")
+              .map(c => (
+                <option key={c.id} value={c.name}>
+                  {c.name}
+                </option>
+              ))
+            }
           </select>
 
-          <select name="source" value={formData.source} onChange={handleInputChange}>
-            {sources.map(s => <option key={s}>{s}</option>)}
+          {/* ✅ LEAD SOURCE DROPDOWN (FROM ADMIN) */}
+          <select
+            name="source"
+            value={formData.source}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Select Lead Source</option>
+
+            {lists
+              .filter(l => l.status?.toLowerCase() === "active")
+              .map(l => (
+                <option key={l.id} value={l.name}>
+                  {l.name}
+                </option>
+              ))
+            }
           </select>
 
-          <select name="stage" value={formData.stage} onChange={handleInputChange}>
+          {/* STATUS */}
+          <select
+            name="stage"
+            value={formData.stage}
+            onChange={handleInputChange}
+          >
             {stages.map(s => <option key={s}>{s}</option>)}
           </select>
 
-          <select name="assignedCounselorId" value={formData.assignedCounselorId || ''} onChange={handleInputChange}>
+          {/* COUNSELOR */}
+          <select
+            name="assignedCounselorId"
+            value={formData.assignedCounselorId || ''}
+            onChange={handleInputChange}
+          >
             <option value="">Assign Counselor</option>
             {counselors.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
 
@@ -180,6 +242,7 @@ function ManageLeads() {
           <button type="button" onClick={handleCancel}>
             Cancel
           </button>
+
         </form>
       )}
 
@@ -211,7 +274,7 @@ function ManageLeads() {
                   <p><b>Course:</b> {enquiry.courseInterested}</p>
                   <p><b>Source:</b> {enquiry.source}</p>
 
-                  {/* 🔥 ASSIGN COUNSELOR */}
+                  {/* ASSIGN COUNSELOR */}
                   <div>
                     <b>Counselor:</b>{" "}
                     <select
