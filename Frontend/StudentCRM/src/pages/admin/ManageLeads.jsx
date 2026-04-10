@@ -1,329 +1,257 @@
-import { useState } from 'react'
-import { useData } from '../../Components/context/DataContext'
-import { Plus } from 'lucide-react'
-import './ManageLeads.css'
+import { useState } from "react";
+import { useData } from "../../Components/context/DataContext";
+import { Plus } from "lucide-react";
 
 function ManageLeads() {
-
   const {
     enquiries = [],
     addEnquiry,
     updateEnquiry,
     deleteEnquiry,
     users = [],
-    courses = [],     // ✅ FROM BACKEND
-    lists = []        // ✅ FROM BACKEND
-  } = useData()
+    courses = [],
+    lists = [],
+  } = useData();
 
   const counselors = users.filter(
-    u => u.role?.toLowerCase() === 'counselor'
-  )
+    (u) => u.role?.toLowerCase() === "counselor"
+  );
 
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
-  const [expandedId, setExpandedId] = useState(null)
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
-  const [search, setSearch] = useState("")
-  const [filterStage, setFilterStage] = useState("All")
+  const [search, setSearch] = useState("");
+  const [filterStage, setFilterStage] = useState("All");
 
   const [formData, setFormData] = useState({
-    studentName: '',
-    phone: '',
-    email: '',
-    courseInterested: '',   // ✅ FIXED
-    source: '',             // ✅ FIXED
-    stage: 'New',
+    studentName: "",
+    phone: "",
+    email: "",
+    courseInterested: "",
+    source: "",
+    stage: "New",
     assignedCounselorId: null,
-    status: 'New'
-  })
+    status: "New",
+  });
 
-  const stages = ['New', 'Called', 'Follow-up', 'Closed']
+  const stages = ["New", "Called", "Follow-up", "Closed"];
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]:
-        name === 'assignedCounselorId'
-          ? (value ? Number(value) : null)
-          : value
-    }))
-  }
+        name === "assignedCounselorId"
+          ? value
+            ? Number(value)
+            : null
+          : value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    try {
-      if (editingId) {
-        await updateEnquiry(editingId, formData)
-        setEditingId(null)
-      } else {
-        await addEnquiry({
-          ...formData,
-          createdDate: new Date().toISOString().split('T')[0]
-        })
-      }
-
-      setFormData({
-        studentName: '',
-        phone: '',
-        email: '',
-        courseInterested: '',
-        source: '',
-        stage: 'New',
-        assignedCounselorId: null,
-        status: 'New'
-      })
-
-      setShowForm(false)
-
-    } catch (err) {
-      console.error("Submit error:", err)
+    if (editingId) {
+      await updateEnquiry(editingId, formData);
+      setEditingId(null);
+    } else {
+      await addEnquiry({
+        ...formData,
+        createdDate: new Date().toISOString().split("T")[0],
+      });
     }
-  }
+
+    setFormData({
+      studentName: "",
+      phone: "",
+      email: "",
+      courseInterested: "",
+      source: "",
+      stage: "New",
+      assignedCounselorId: null,
+      status: "New",
+    });
+
+    setShowForm(false);
+  };
 
   const handleEdit = (enquiry) => {
-    setFormData({
-      studentName: enquiry.studentName || '',
-      phone: enquiry.phone || '',
-      email: enquiry.email || '',
-      courseInterested: enquiry.courseInterested || '',
-      source: enquiry.source || '',
-      stage: enquiry.stage || 'New',
-      assignedCounselorId: enquiry.assignedCounselorId || null,
-      status: enquiry.status || 'New'
-    })
-    setEditingId(enquiry.id)
-    setShowForm(true)
-  }
+    setFormData(enquiry);
+    setEditingId(enquiry.id);
+    setShowForm(true);
+  };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this lead?')) {
-      await deleteEnquiry(id)
+    if (window.confirm("Delete this lead?")) {
+      await deleteEnquiry(id);
     }
-  }
+  };
 
-  const handleCancel = () => {
-    setShowForm(false)
-    setEditingId(null)
-  }
-
-  // ✅ FILTERED DATA
-  const filteredEnquiries = enquiries.filter(e =>
-    (e.studentName?.toLowerCase().includes(search.toLowerCase()) ||
-      e.phone?.includes(search)) &&
-    (filterStage === "All" || e.stage === filterStage)
-  )
+  const filteredEnquiries = enquiries.filter(
+    (e) =>
+      (e.studentName?.toLowerCase().includes(search.toLowerCase()) ||
+        e.phone?.includes(search)) &&
+      (filterStage === "All" || e.stage === filterStage)
+  );
 
   return (
-    <div className="manage-leads">
+    <div className="p-6">
 
       {/* HEADER */}
-      <div className="page-header">
-        <h2>Manage Leads</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">Manage Leads</h2>
 
         <button
-          className="btn-primary"
           onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:scale-105 transition shadow"
         >
-          <Plus size={18} />
-          {showForm ? 'Cancel' : 'Add Lead'}
+          <Plus size={16} />
+          {showForm ? "Cancel" : "Add Lead"}
         </button>
       </div>
 
       {/* FILTERS */}
-      <div className="filters">
+      <div className="flex gap-3 mb-5">
         <input
           type="text"
           placeholder="Search by name or phone"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="border p-2 rounded w-64"
         />
 
-        <select value={filterStage} onChange={(e) => setFilterStage(e.target.value)}>
+        <select
+          value={filterStage}
+          onChange={(e) => setFilterStage(e.target.value)}
+          className="border p-2 rounded"
+        >
           <option value="All">All</option>
-          {stages.map(s => <option key={s}>{s}</option>)}
+          {stages.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
         </select>
       </div>
 
       {/* FORM */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="lead-form">
+        <form className="grid md:grid-cols-3 gap-4 bg-white p-5 rounded-xl shadow mb-6">
+          <input name="studentName" placeholder="Name" value={formData.studentName} onChange={handleInputChange} className="border p-2 rounded" />
+          <input name="phone" placeholder="Phone" value={formData.phone} onChange={handleInputChange} className="border p-2 rounded" />
+          <input name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} className="border p-2 rounded" />
 
-          <input
-            name="studentName"
-            value={formData.studentName}
-            onChange={handleInputChange}
-            placeholder="Student Name"
-            required
-          />
-
-          <input
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            placeholder="Phone Number"
-            required
-          />
-
-          <input
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Email"
-          />
-
-          {/* ✅ COURSE DROPDOWN (FROM ADMIN) */}
-          <select
-            name="courseInterested"
-            value={formData.courseInterested}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">Select Course</option>
-
-            {courses
-              .filter(c => c.status?.toLowerCase() === "active")
-              .map(c => (
-                <option key={c.id} value={c.name}>
-                  {c.name}
-                </option>
-              ))
-            }
+          <select name="courseInterested" value={formData.courseInterested} onChange={handleInputChange} className="border p-2 rounded">
+            <option value="">Course</option>
+            {courses.map((c) => (
+              <option key={c.id}>{c.name}</option>
+            ))}
           </select>
 
-          {/* ✅ LEAD SOURCE DROPDOWN (FROM ADMIN) */}
-          <select
-            name="source"
-            value={formData.source}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">Select Lead Source</option>
-
-            {lists
-              .filter(l => l.status?.toLowerCase() === "active")
-              .map(l => (
-                <option key={l.id} value={l.name}>
-                  {l.name}
-                </option>
-              ))
-            }
+          <select name="source" value={formData.source} onChange={handleInputChange} className="border p-2 rounded">
+            <option value="">Source</option>
+            {lists.map((l) => (
+              <option key={l.id}>{l.name}</option>
+            ))}
           </select>
 
-          {/* STATUS */}
-          <select
-            name="stage"
-            value={formData.stage}
-            onChange={handleInputChange}
-          >
-            {stages.map(s => <option key={s}>{s}</option>)}
+          <select name="stage" value={formData.stage} onChange={handleInputChange} className="border p-2 rounded">
+            {stages.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
           </select>
 
-          {/* COUNSELOR */}
-          <select
-            name="assignedCounselorId"
-            value={formData.assignedCounselorId || ''}
-            onChange={handleInputChange}
-          >
+          <select name="assignedCounselorId" value={formData.assignedCounselorId || ""} onChange={handleInputChange} className="border p-2 rounded">
             <option value="">Assign Counselor</option>
-            {counselors.map(c => (
+            {counselors.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
             ))}
           </select>
 
-          <button type="submit">
-            {editingId ? 'Update Lead' : 'Add Lead'}
+          <button onClick={handleSubmit} className="col-span-full bg-indigo-600 text-white p-2 rounded">
+            {editingId ? "Update" : "Add"}
           </button>
-
-          <button type="button" onClick={handleCancel}>
-            Cancel
-          </button>
-
         </form>
       )}
 
-      {/* LIST */}
-      <div className="leads-list">
+      {/* TABLE */}
+      <div className="bg-white rounded-xl shadow overflow-hidden">
 
-        {filteredEnquiries.length === 0 ? (
-          <div className="empty-state">No leads found</div>
-        ) : (
-          filteredEnquiries.map(enquiry => (
+        {/* HEADER */}
+        <div className="grid grid-cols-6 px-6 py-3 text-sm font-semibold text-gray-500 bg-gray-50 border-b">
+          <div>Candidate</div>
+          <div>Phone</div>
+          <div>Course</div>
+          <div>Status</div>
+          <div>Counselor</div>
+          <div className="text-right">Actions</div>
+        </div>
 
-            <div
-              key={enquiry.id}
-              className="lead-card"
-              onClick={() =>
-                setExpandedId(expandedId === enquiry.id ? null : enquiry.id)
-              }
-            >
+        {/* ROWS */}
+        {filteredEnquiries.map((e) => (
+          <div key={e.id} className="grid grid-cols-6 items-center px-6 py-4 border-b hover:bg-gray-50">
 
-              <span className="lead-status">{enquiry.stage}</span>
+            <div className="font-medium">{e.studentName}</div>
+            <div className="text-sm text-gray-600">{e.phone}</div>
+            <div>{e.courseInterested}</div>
 
-              <h4>{enquiry.studentName}</h4>
-              <p>{enquiry.phone}</p>
-
-              {expandedId === enquiry.id && (
-                <div className="lead-details">
-
-                  <p><b>Email:</b> {enquiry.email || 'N/A'}</p>
-                  <p><b>Course:</b> {enquiry.courseInterested}</p>
-                  <p><b>Source:</b> {enquiry.source}</p>
-
-                  {/* ASSIGN COUNSELOR */}
-                  <div>
-                    <b>Counselor:</b>{" "}
-                    <select
-                      value={enquiry.assignedCounselorId || ""}
-                      onChange={async (e) => {
-                        const newId = e.target.value ? Number(e.target.value) : null
-
-                        await updateEnquiry(enquiry.id, {
-                          ...enquiry,
-                          assignedCounselorId: newId
-                        })
-                      }}
-                    >
-                      <option value="">Unassigned</option>
-                      {counselors.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="lead-actions">
-                    <button onClick={(e) => {
-                      e.stopPropagation()
-                      handleEdit(enquiry)
-                    }}>
-                      Edit
-                    </button>
-
-                    <button onClick={(e) => {
-                      e.stopPropagation()
-                      handleDelete(enquiry.id)
-                    }}>
-                      Delete
-                    </button>
-                  </div>
-
-                </div>
-              )}
-
+            <div>
+              <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-600">
+                {e.stage}
+              </span>
             </div>
 
-          ))
-        )}
+            {/* COUNSELOR SELECT */}
+            <select
+              value={e.assignedCounselorId || ""}
+              onChange={async (ev) => {
+                await updateEnquiry(e.id, {
+                  ...e,
+                  assignedCounselorId: ev.target.value
+                    ? Number(ev.target.value)
+                    : null,
+                });
+              }}
+              className="border p-1 rounded"
+            >
+              <option value="">Unassigned</option>
+              {counselors.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
 
+            {/* ACTIONS */}
+            <div className="flex justify-end gap-2">
+
+              <button
+                onClick={() => handleEdit(e)}
+                className="px-3 py-1 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600"
+              >
+                Edit
+              </button>
+
+              <button
+                onClick={() => handleDelete(e.id)}
+                className="px-3 py-1 text-sm rounded-md bg-red-500 text-white hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {filteredEnquiries.length === 0 && (
+          <div className="p-6 text-center text-gray-500">
+            No leads found
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
-export default ManageLeads
+export default ManageLeads;

@@ -1,330 +1,299 @@
-import { useState, useEffect } from 'react'
-import { useData } from '../../Components/context/DataContext'
-import { useAuth } from '../../Components/context/AuthContext'
-import { Plus, Upload } from 'lucide-react'
-import './MyEnquiries.css'
+import { useState, useEffect } from "react";
+import { useData } from "../../Components/context/DataContext";
+import { useAuth } from "../../Components/context/AuthContext";
+import { Plus, Upload } from "lucide-react";
 
 function MyEnquiries() {
-
   const {
     enquiries = [],
     users = [],
     courses = [],
-    lists = [],                 // ✅ USE THIS (FIXED)
+    lists = [],
     addEnquiry,
     updateEnquiry,
     getAllEnquiries,
-    getAllLists,               // ✅ FETCH LISTS
+    getAllLists,
     addAdmission,
-    error
-  } = useData()
+    error,
+  } = useData();
 
-  const { user } = useAuth()
+  const { user } = useAuth();
 
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
-  const [expandedId, setExpandedId] = useState(null)
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [formData, setFormData] = useState({
-    studentName: '',
-    phone: '',
-    email: '',
-    courseInterested: 'MBA',
-    source: '',                // ✅ FIXED (IMPORTANT)
-    stage: 'New',
-    counselorId: ''
-  })
+    studentName: "",
+    phone: "",
+    email: "",
+    courseInterested: "MBA",
+    source: "",
+    stage: "New",
+    counselorId: "",
+  });
 
-  const counselors = users.filter(u => u.role === 'COUNSELOR')
+  const counselors = users.filter((u) => u.role === "COUNSELOR");
 
-  // ✅ FETCH DATA
   useEffect(() => {
     if (user?.id) {
-      getAllEnquiries()
-      getAllLists()            // ✅ IMPORTANT
+      getAllEnquiries();
+      getAllLists();
     }
-  }, [user?.id])
+  }, [user?.id]);
 
-  // ✅ FILTER MY ENQUIRIES
   const myEnquiries = enquiries.filter(
     (e) => String(e.assignedCounselorId) === String(user?.id)
-  )
+  );
 
-  const statuses = ['New', 'Called', 'Follow-up', 'Closed', 'Converted']
+  const statuses = ["New", "Called", "Follow-up", "Closed", "Converted"];
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  // ✅ CONVERT TO ADMISSION
   const handleConvert = async (enquiry) => {
-
     const payload = {
       enquiryId: enquiry.id,
       studentName: enquiry.studentName,
       courseSelected: enquiry.courseInterested,
       fees: 0,
       feesPaid: 0,
-      paymentStatus: 'Pending',
-      admissionDate: new Date().toISOString().split('T')[0]
-    }
+      paymentStatus: "Pending",
+      admissionDate: new Date().toISOString().split("T")[0],
+    };
 
-    const success = await addAdmission(payload)
+    const success = await addAdmission(payload);
 
     if (success) {
-      alert("✅ Converted to Admission")
-      await getAllEnquiries()
-    } else {
-      alert("❌ Conversion failed")
+      alert("✅ Converted to Admission");
+      await getAllEnquiries();
     }
-  }
+  };
 
-  // ✅ FILE UPLOAD
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-
-    const formData = new FormData()
-    formData.append("file", file)
-    formData.append("counselorId", user?.id)
-
-    try {
-      const res = await fetch("http://localhost:8080/api/admin/enquiries/upload", {
-        method: "POST",
-        body: formData
-      })
-
-      if (!res.ok) {
-        const errorText = await res.text()
-        throw new Error(errorText)
-      }
-
-      alert(await res.text())
-      await getAllEnquiries()
-
-    } catch (err) {
-      alert("Upload failed ❌: " + err.message)
-    }
-
-    e.target.value = ""
-  }
-
-  // ✅ SUBMIT
   const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    if (!formData.counselorId) {
-      alert("Please select counselor")
-      return
-    }
+    e.preventDefault();
 
     const payload = {
       ...formData,
       assignedCounselorId: parseInt(formData.counselorId),
-      createdDate: new Date().toISOString().split('T')[0]
-    }
+      createdDate: new Date().toISOString().split("T")[0],
+    };
 
     if (editingId) {
-      await updateEnquiry(editingId, payload)
-      setEditingId(null)
+      await updateEnquiry(editingId, payload);
+      setEditingId(null);
     } else {
-      await addEnquiry(payload)
+      await addEnquiry(payload);
     }
 
-    await getAllEnquiries()
+    await getAllEnquiries();
 
     setFormData({
-      studentName: '',
-      phone: '',
-      email: '',
-      courseInterested: 'MBA',
-      source: '',              // ✅ RESET FIXED
-      stage: 'New',
-      counselorId: ''
-    })
+      studentName: "",
+      phone: "",
+      email: "",
+      courseInterested: "MBA",
+      source: "",
+      stage: "New",
+      counselorId: "",
+    });
 
-    setShowForm(false)
-  }
+    setShowForm(false);
+  };
 
   const handleEdit = (enquiry) => {
     setFormData({
       ...enquiry,
-      stage: enquiry.stage || 'New',
-      counselorId: enquiry.assignedCounselorId || ''
-    })
-    setEditingId(enquiry.id)
-    setShowForm(true)
-  }
+      counselorId: enquiry.assignedCounselorId,
+    });
+    setEditingId(enquiry.id);
+    setShowForm(true);
+  };
 
   return (
-    <div className="my-enquiries">
+    <div className="p-6">
 
-      <div className="page-header">
-        <h2>My Leads</h2>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">My Leads</h2>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <label className="btn-secondary">
+        <div className="flex gap-3">
+          <label className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 text-white cursor-pointer hover:scale-105 transition">
             <Upload size={16} />
-            Import Excel
-            <input
-              type="file"
-              accept=".xlsx, .csv"
-              onChange={handleFileUpload}
-              hidden
-            />
+            Import
+            <input type="file" hidden />
           </label>
 
           <button
-            className="btn-primary"
             onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
           >
-            <Plus size={18} />
-            {showForm ? 'Cancel' : 'Add Lead'}
+            <Plus size={16} />
+            {showForm ? "Cancel" : "Add Lead"}
           </button>
         </div>
       </div>
 
-      {error && (
-        <div className="error-message">
-          Error loading enquiries: {error}
-        </div>
-      )}
-
+      {/* FORM */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="enquiry-form">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-5 rounded-xl shadow mb-6"
+        >
+          <input
+            name="studentName"
+            placeholder="Student Name"
+            value={formData.studentName}
+            onChange={handleInputChange}
+            className="border p-2 rounded"
+            required
+          />
 
-          <input name="studentName" placeholder="Student Name"
-            value={formData.studentName} onChange={handleInputChange} required />
+          <input
+            name="phone"
+            placeholder="Phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+            className="border p-2 rounded"
+            required
+          />
 
-          <input name="phone" placeholder="Phone"
-            value={formData.phone} onChange={handleInputChange} required />
+          <input
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleInputChange}
+            className="border p-2 rounded"
+          />
 
-          <input name="email" placeholder="Email"
-            value={formData.email} onChange={handleInputChange} />
-
-          {/* COURSE */}
           <select
             name="courseInterested"
             value={formData.courseInterested}
             onChange={handleInputChange}
+            className="border p-2 rounded"
           >
-            {courses.length === 0 ? (
-              <option>No Courses Available</option>
-            ) : (
-              courses
-                .filter(c => c.status === "Active")
-                .map(c => (
-                  <option key={c.id} value={c.name}>
-                    {c.name}
-                  </option>
-                ))
-            )}
+            {courses.map((c) => (
+              <option key={c.id}>{c.name}</option>
+            ))}
           </select>
 
-          {/* ✅ LEAD SOURCE FIXED */}
           <select
             name="source"
             value={formData.source}
             onChange={handleInputChange}
+            className="border p-2 rounded"
           >
-            <option value="">Select Lead Source</option>
-
-            {lists.length === 0 ? (
-              <option>No Lead Lists</option>
-            ) : (
-              lists
-                .filter(list => list.status?.toLowerCase() === "active")
-                .map(list => (
-                  <option key={list.id} value={list.name}>
-                    {list.name}
-                  </option>
-                ))
-            )}
+            <option value="">Lead Source</option>
+            {lists.map((l) => (
+              <option key={l.id}>{l.name}</option>
+            ))}
           </select>
 
-          {/* STATUS */}
           <select
             name="stage"
             value={formData.stage}
             onChange={handleInputChange}
+            className="border p-2 rounded"
           >
-            {statuses.map(s => <option key={s}>{s}</option>)}
+            {statuses.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
           </select>
 
-          {/* COUNSELOR */}
           <select
             name="counselorId"
             value={formData.counselorId}
             onChange={handleInputChange}
+            className="border p-2 rounded"
             required
           >
             <option value="">Assign Counselor</option>
-            {counselors.map(c => (
+            {counselors.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name || c.email}
               </option>
             ))}
           </select>
 
-          <button type="submit">
-            {editingId ? 'Update Lead' : 'Add Lead'}
+          <button className="bg-indigo-600 text-white rounded p-2 col-span-full">
+            {editingId ? "Update" : "Add"}
           </button>
-
         </form>
       )}
 
-      <div className="enquiries-grid">
-        {myEnquiries.length === 0 ? (
-          <div className="empty-state">No leads found</div>
-        ) : (
-          myEnquiries.map(enquiry => (
-            <div
-              key={enquiry.id}
-              className="enquiry-card"
-              onClick={() =>
-                setExpandedId(expandedId === enquiry.id ? null : enquiry.id)
-              }
+      {/* TABLE (LIKE COMPANY DASHBOARD) */}
+<div className="bg-white rounded-xl shadow overflow-hidden">
+
+  {/* HEADER */}
+  <div className="grid grid-cols-5 px-6 py-3 text-sm font-semibold text-gray-500 border-b bg-gray-50">
+    <div>Candidate</div>
+    <div>Phone</div>
+    <div>Course</div>
+    <div>Status</div>
+    <div className="text-right">Actions</div>
+  </div>
+
+  {/* ROWS */}
+  {myEnquiries.length === 0 ? (
+    <div className="p-6 text-center text-gray-500">No leads found</div>
+  ) : (
+    myEnquiries.map((enquiry) => (
+      <div
+        key={enquiry.id}
+        className="grid grid-cols-5 items-center px-6 py-4 border-b hover:bg-gray-50 transition"
+      >
+        {/* NAME */}
+        <div className="font-medium">{enquiry.studentName}</div>
+
+        {/* PHONE */}
+        <div className="text-sm text-gray-600">{enquiry.phone}</div>
+
+        {/* COURSE */}
+        <div className="text-sm">{enquiry.courseInterested}</div>
+
+        {/* STATUS */}
+        <div>
+          <span className="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-600">
+            {enquiry.stage}
+          </span>
+        </div>
+
+        {/* ACTIONS */}
+        <div className="flex justify-end gap-2">
+
+          {/* EDIT BUTTON (COLORED ✅) */}
+          <button
+            onClick={() => handleEdit(enquiry)}
+            className="px-3 py-1 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
+          >
+            Edit
+          </button>
+
+          {/* CONVERT BUTTON */}
+          {enquiry.stage !== "Converted" && (
+            <button
+              onClick={() => handleConvert(enquiry)}
+              className="px-3 py-1 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition"
             >
-              <span className="lead-status">{enquiry.stage}</span>
-
-              <h4>{enquiry.studentName}</h4>
-              <p>{enquiry.phone}</p>
-
-              {expandedId === enquiry.id && (
-                <div className="enquiry-details">
-                  <p><b>Email:</b> {enquiry.email || 'N/A'}</p>
-                  <p><b>Course:</b> {enquiry.courseInterested}</p>
-
-                  <div className="enquiry-actions">
-                    <button onClick={(e) => {
-                      e.stopPropagation()
-                      handleEdit(enquiry)
-                    }}>
-                      Edit
-                    </button>
-
-                    {enquiry.stage !== "Converted" && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleConvert(enquiry)
-                        }}
-                      >
-                        Convert
-                      </button>
-                    )}
-
-                  </div>
-                </div>
-              )}
-            </div>
-          ))
-        )}
+              Convert
+            </button>
+          )}
+        </div>
       </div>
+    ))
+  )}
+</div>
 
+      {myEnquiries.length === 0 && (
+        <div className="text-center mt-10 text-gray-500">
+          No leads found
+        </div>
+      )}
+
+      {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>
-  )
+  );
 }
 
-export default MyEnquiries
+export default MyEnquiries;

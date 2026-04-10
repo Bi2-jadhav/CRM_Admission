@@ -1,138 +1,144 @@
-import { useState } from 'react'
-import { useData } from '../../Components/context/DataContext'   // ✅ FIXED
-import { Plus, Edit2, Trash2, ChevronDown } from 'lucide-react'
-import './ManageUsers.css'
+import { useState } from "react";
+import { useData } from "../../Components/context/DataContext";
+import { Plus, ChevronDown } from "lucide-react";
 
 function ManageUsers() {
+  const { users = [], addUser, updateUser, deleteUser } = useData();
 
-  // ✅ SAFE DESTRUCTURING
-  const { users = [], addUser, updateUser, deleteUser } = useData()
-
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    username: '',
-    password: '',
-    role: 'counselor',
-    status: 'active'
-  })
-
-  const [expandedId, setExpandedId] = useState(null)
+    name: "",
+    email: "",
+    phone: "",
+    username: "",
+    password: "",
+    role: "counselor",
+    status: "active",
+  });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (editingId) {
-      updateUser(editingId, formData)
-      setEditingId(null)
+      updateUser(editingId, formData);
+      setEditingId(null);
     } else {
-      addUser(formData)
+      addUser(formData);
     }
 
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      username: '',
-      password: '',
-      role: 'counselor',
-      status: 'active'
-    })
-
-    setShowForm(false)
-  }
+    resetForm();
+  };
 
   const handleEdit = (user) => {
-    setFormData({
-      name: user.name || '',
-      email: user.email || '',
-      phone: user.phone || '',
-      username: user.username || '',
-      password: user.password || '',
-      role: user.role || 'counselor',
-      status: user.status || 'active'
-    })
-
-    setEditingId(user.id)
-    setShowForm(true)
-  }
+    setFormData(user);
+    setEditingId(user.id);
+    setShowForm(true);
+  };
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      deleteUser(id)
+    if (window.confirm("Delete this user?")) {
+      deleteUser(id);
     }
-  }
+  };
 
-  const handleCancel = () => {
-    setShowForm(false)
-    setEditingId(null)
-
+  const resetForm = () => {
+    setShowForm(false);
+    setEditingId(null);
     setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      username: '',
-      password: '',
-      role: 'counselor',
-      status: 'active'
-    })
-  }
+      name: "",
+      email: "",
+      phone: "",
+      username: "",
+      password: "",
+      role: "counselor",
+      status: "active",
+    });
+  };
 
   return (
-    <div className="manage-users">
+    <div className="p-6">
 
-      <div className="page-header">
-        <h2>Manage Users</h2>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">Manage Users</h2>
 
         <button
-          className="btn btn-primary"
           onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow hover:scale-105 transition"
         >
-          <Plus size={20} />
-          {showForm ? 'Cancel' : 'Add User'}
+          <Plus size={16} />
+          {showForm ? "Cancel" : "Add User"}
         </button>
       </div>
 
       {/* FORM */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="user-form">
-          <h3>{editingId ? 'Edit User' : 'Add New User'}</h3>
+        <form className="bg-white p-6 rounded-xl shadow mb-6">
 
-          <div className="form-grid">
+          <h3 className="text-lg font-semibold mb-4">
+            {editingId ? "Edit User" : "Add New User"}
+          </h3>
 
-            <input name="name" value={formData.name} onChange={handleInputChange} placeholder="Name" required />
-            <input name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" required />
-            <input name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Phone" />
-            <input name="username" value={formData.username} onChange={handleInputChange} placeholder="Username" required />
-            <input name="password" value={formData.password} onChange={handleInputChange} placeholder="Password" required />
+          <div className="grid md:grid-cols-3 gap-4">
 
-            <select name="role" value={formData.role} onChange={handleInputChange}>
+            <input name="name" placeholder="Name"
+              value={formData.name} onChange={handleInputChange}
+              className="border p-2 rounded" required />
+
+            <input name="email" placeholder="Email"
+              value={formData.email} onChange={handleInputChange}
+              className="border p-2 rounded" required />
+
+            <input name="phone" placeholder="Phone"
+              value={formData.phone} onChange={handleInputChange}
+              className="border p-2 rounded" />
+
+            <input name="username" placeholder="Username"
+              value={formData.username} onChange={handleInputChange}
+              className="border p-2 rounded" required />
+
+            <input name="password" placeholder="Password"
+              value={formData.password} onChange={handleInputChange}
+              className="border p-2 rounded" required />
+
+            <select name="role" value={formData.role}
+              onChange={handleInputChange}
+              className="border p-2 rounded">
               <option value="counselor">Counselor</option>
               <option value="admin">Admin</option>
             </select>
 
-            <select name="status" value={formData.status} onChange={handleInputChange}>
+            <select name="status" value={formData.status}
+              onChange={handleInputChange}
+              className="border p-2 rounded">
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
 
           </div>
 
-          <div className="form-actions">
-            <button type="submit" className="btn btn-primary">
-              {editingId ? 'Update' : 'Add'}
+          {/* ACTION BUTTONS */}
+          <div className="flex gap-3 mt-5">
+            <button
+              onClick={handleSubmit}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            >
+              {editingId ? "Update" : "Add"}
             </button>
 
-            <button type="button" onClick={handleCancel} className="btn btn-secondary">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+            >
               Cancel
             </button>
           </div>
@@ -140,47 +146,72 @@ function ManageUsers() {
       )}
 
       {/* USERS LIST */}
-      <div className="users-list">
+      <div className="space-y-4">
 
         {users.length === 0 ? (
-          <p>No users found</p>
+          <p className="text-gray-500">No users found</p>
         ) : (
-          users.map(user => (
-            <div key={user.id} className="user-card">
+          users.map((user) => (
+            <div
+              key={user.id}
+              className="bg-white rounded-xl shadow p-4 hover:shadow-md transition"
+            >
 
+              {/* HEADER */}
               <div
-                className="user-header"
+                className="flex justify-between items-center cursor-pointer"
                 onClick={() =>
-                  setExpandedId(expandedId === user.id ? null : user.id)
+                  setExpandedId(
+                    expandedId === user.id ? null : user.id
+                  )
                 }
               >
                 <div>
-                  <h4>{user.name}</h4>
-                  <p>{user.email}</p>
+                  <h3 className="font-semibold">{user.name}</h3>
+                  <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
 
-                <ChevronDown />
+                <ChevronDown
+                  className={`transition ${
+                    expandedId === user.id ? "rotate-180" : ""
+                  }`}
+                />
               </div>
 
+              {/* DETAILS */}
               {expandedId === user.id && (
-                <div className="user-details">
+                <div className="mt-4 border-t pt-3 text-sm text-gray-600 space-y-1">
 
-                  <p><b>Phone:</b> {user.phone || 'N/A'}</p>
+                  <p><b>Phone:</b> {user.phone || "N/A"}</p>
                   <p><b>Username:</b> {user.username}</p>
                   <p><b>Role:</b> {user.role}</p>
 
-                  <button onClick={() => handleEdit(user)}>Edit</button>
-                  <button onClick={() => handleDelete(user.id)}>Delete</button>
+                  {/* ACTIONS */}
+                  <div className="flex gap-2 pt-2">
 
+                    <button
+                      onClick={() => handleEdit(user)}
+                      className="flex-1 bg-blue-500 text-white py-1 rounded hover:bg-blue-600"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      className="flex-1 bg-red-500 text-white py-1 rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+
+                  </div>
                 </div>
               )}
             </div>
           ))
         )}
-
       </div>
     </div>
-  )
+  );
 }
 
-export default ManageUsers
+export default ManageUsers;
