@@ -30,6 +30,7 @@ function MyEnquiries() {
     source: "",
     stage: "New",
     counselorId: "",
+    address: "",
   });
 
   const counselors = users.filter((u) => u.role === "COUNSELOR");
@@ -53,9 +54,24 @@ function MyEnquiries() {
   };
 
   const handleConvert = async (enquiry) => {
+    // Find the student user account by email to link the admission
+    const studentUser = users.find(u => 
+      u.email?.toLowerCase() === enquiry.email?.toLowerCase() && 
+      (u.role?.toLowerCase() === "student" || u.role?.toLowerCase() === "user")
+    );
+
+    if (!studentUser) {
+      alert("❌ Cannot convert: No student account found with email " + enquiry.email + ". Please ensure the student has signed up first.");
+      return;
+    }
+
     const payload = {
       enquiryId: enquiry.id,
+      userId: studentUser ? studentUser.id : null, // ✅ Link to the correct student account
       studentName: enquiry.studentName,
+      phone: enquiry.phone,
+      email: enquiry.email,
+      address: enquiry.address,
       courseSelected: enquiry.courseInterested,
       fees: 0,
       feesPaid: 0,
@@ -97,6 +113,7 @@ function MyEnquiries() {
       source: "",
       stage: "New",
       counselorId: "",
+      address: "",
     });
 
     setShowForm(false);
@@ -163,6 +180,14 @@ function MyEnquiries() {
             name="email"
             placeholder="Email"
             value={formData.email}
+            onChange={handleInputChange}
+            className="border p-2 rounded"
+          />
+
+          <input
+            name="address"
+            placeholder="Address"
+            value={formData.address}
             onChange={handleInputChange}
             className="border p-2 rounded"
           />

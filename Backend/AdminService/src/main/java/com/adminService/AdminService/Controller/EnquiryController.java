@@ -80,4 +80,8 @@ public class EnquiryController {
                     .body("Error processing file ❌: " + e.getMessage());
         }
     }
+    @GetMapping("/user/{userId}")
+    public Enquiry getByUserId(@PathVariable Long userId) {
+        return service.getByUserId(userId);
+    }
 }

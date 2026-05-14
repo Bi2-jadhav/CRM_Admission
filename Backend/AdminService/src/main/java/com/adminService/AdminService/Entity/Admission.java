@@ -8,7 +8,14 @@ public class Admission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // ✅ Admission ID
     private Long enquiryId;     // ✅ Enquiry ID
+
+    private Long userId;
+
+    private Long trainerId;
     private String studentName;
+    private String phone;
+    private String email;
+    private String address;
     private String courseSelected;
     private Double fees;
     private Double feesPaid;
@@ -19,12 +26,52 @@ public class Admission {
 
     // ================= GETTERS & SETTERS =================
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public Long getId() { return id; }
 
     public void setId(Long id) { this.id = id; }
 
+    public Long getTrainerId() {
+        return trainerId;
+    }
+
+    public void setTrainerId(Long trainerId) {
+        this.trainerId = trainerId;
+    }
+
     public Long getEnquiryId() { return enquiryId; }
     public void setEnquiryId(Long enquiryId) { this.enquiryId = enquiryId; }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public String getStudentName() { return studentName; }
     public void setStudentName(String studentName) { this.studentName = studentName; }

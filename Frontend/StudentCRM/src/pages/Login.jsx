@@ -39,6 +39,12 @@ export default function LoginPage() {
       else if (user.role === 'COUNSELOR') {
         navigate('/dashboard/counselor')
       } 
+        else if (user.role === 'STUDENT') {
+        navigate('/dashboard/student')
+      }
+      else if (user.role === 'TRAINER') {
+        navigate('/dashboard/trainer')
+      }
       else {
         navigate('/unauthorized')
       }

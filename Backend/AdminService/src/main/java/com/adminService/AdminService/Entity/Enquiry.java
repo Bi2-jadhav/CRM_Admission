@@ -13,6 +13,7 @@ public class Enquiry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long userId;
     private String studentName;
     private String phone;
     private String email;
@@ -21,12 +22,29 @@ public class Enquiry {
     private String stage;
     private Long assignedCounselorId;
     private String status;
+    private String address;
     private LocalDate createdDate;
 
     public Enquiry() {}
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public String getStudentName() { return studentName; }
     public void setStudentName(String studentName) { this.studentName = studentName; }

@@ -15,6 +15,7 @@ function ManageCourses() {
     duration: "",
     mode: "Offline",
     status: "Active",
+    fees: "",
   });
 
   const handleInputChange = (e) => {
@@ -59,6 +60,7 @@ function ManageCourses() {
       duration: "",
       mode: "Offline",
       status: "Active",
+      fees: "",
     });
   };
 
@@ -109,6 +111,10 @@ function ManageCourses() {
             <option>Inactive</option>
           </select>
 
+          <input name="fees" type="number" placeholder="Course Fees (₹)"
+            value={formData.fees} onChange={handleInputChange}
+            className="border p-2 rounded" required />
+
           <button
             onClick={handleSubmit}
             className="col-span-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700"
@@ -157,6 +163,7 @@ function ManageCourses() {
                   <p><b>Specialization:</b> {course.specialization || "N/A"}</p>
                   <p><b>Duration:</b> {course.duration || "N/A"}</p>
                   <p><b>Mode:</b> {course.mode}</p>
+                  <p><b>Fees:</b> <span className="text-indigo-600 font-bold">₹ {course.fees?.toLocaleString() || "0"}</span></p>
 
                   {/* ACTIONS */}
                   <div className="flex gap-2 pt-2">

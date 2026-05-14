@@ -35,4 +35,10 @@ public class CallRecordController {
     public CallRecord create(@RequestBody CallRecord record) {
         return service.create(record);
     }
+
+    // ✅ FOR STUDENT DASHBOARD
+    @PostMapping("/by-enquiry-ids")
+    public List<CallRecord> getCallsByEnquiryIds(@RequestBody List<Long> enquiryIds) {
+        return service.getCallsByEnquiryIds(enquiryIds);
+    }
 }

@@ -35,4 +35,10 @@ public class FollowupController {
     public Followup update(@PathVariable Long id, @RequestBody Followup followup) {
         return service.update(id, followup);
     }
+
+    // ✅ FOR STUDENT DASHBOARD
+    @PostMapping("/by-enquiry-ids")
+    public List<Followup> getFollowupsByEnquiryIds(@RequestBody List<Long> enquiryIds) {
+        return service.getFollowupsByEnquiryIds(enquiryIds);
+    }
 }

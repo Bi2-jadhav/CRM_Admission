@@ -9,6 +9,8 @@ import UnauthorizedPage from './pages/UnauthorizedPage'
 import HomePage from './pages/HomePage';
 import './App.css'
 import CounselorDashboard from './pages/counselor/CounselorDashboard';
+import StudentDashboard from './pages/student/StudentDashboard';
+import TrainerDashboard from './pages/trainer/TrainerDashboard';
 import { DataProvider } from './Components/context/DataContext'
 
 function App() {
@@ -38,6 +40,24 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={['COUNSELOR']}>
                     <CounselorDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/dashboard/student/*"
+                element={
+                  <ProtectedRoute allowedRoles={['STUDENT']}>
+                    <StudentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/dashboard/trainer/*"
+                element={
+                  <ProtectedRoute allowedRoles={['TRAINER']}>
+                    <TrainerDashboard />
                   </ProtectedRoute>
                 }
               />

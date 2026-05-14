@@ -54,4 +54,9 @@ public class CallRecordService {
 
         return saved;
     }
+
+    // ✅ FOR STUDENT DASHBOARD
+    public List<CallRecord> getCallsByEnquiryIds(List<Long> enquiryIds) {
+        return repo.findByEnquiryIds(enquiryIds);
+    }
 }

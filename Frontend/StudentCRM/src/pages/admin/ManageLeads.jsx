@@ -32,6 +32,7 @@ function ManageLeads() {
     stage: "New",
     assignedCounselorId: null,
     status: "New",
+    address: "",
   });
 
   const stages = ["New", "Called", "Follow-up", "Closed"];
@@ -72,6 +73,7 @@ function ManageLeads() {
       stage: "New",
       assignedCounselorId: null,
       status: "New",
+      address: "",
     });
 
     setShowForm(false);
@@ -140,6 +142,7 @@ function ManageLeads() {
           <input name="studentName" placeholder="Name" value={formData.studentName} onChange={handleInputChange} className="border p-2 rounded" />
           <input name="phone" placeholder="Phone" value={formData.phone} onChange={handleInputChange} className="border p-2 rounded" />
           <input name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} className="border p-2 rounded" />
+          <input name="address" placeholder="Address" value={formData.address} onChange={handleInputChange} className="border p-2 rounded" />
 
           <select name="courseInterested" value={formData.courseInterested} onChange={handleInputChange} className="border p-2 rounded">
             <option value="">Course</option>

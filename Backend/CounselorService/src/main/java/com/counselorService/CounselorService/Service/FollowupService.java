@@ -66,5 +66,10 @@ public class FollowupService {
 
         return repo.save(existing);
     }
+
+    // ✅ FOR STUDENT DASHBOARD
+    public List<Followup> getFollowupsByEnquiryIds(List<Long> enquiryIds) {
+        return repo.findByEnquiryIds(enquiryIds);
+    }
 }
 

@@ -6,10 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="StudentService" />
         <module name="ApiGatewayService" />
+        <module name="TrainerService" />
         <module name="ServiceRegistryService" />
       </profile>
-      <profile name="Annotation profile for AdminService" enabled="true">
+      <profile name="Annotation profile for authService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -28,6 +30,8 @@
       <module name="ApiGatewayService" options="-parameters" />
       <module name="CounselorService" options="-parameters" />
       <module name="ServiceRegistryService" options="-parameters" />
+      <module name="StudentService" options="-parameters" />
+      <module name="TrainerService" options="-parameters" />
       <module name="authService" options="-parameters" />
     </option>
   </component>

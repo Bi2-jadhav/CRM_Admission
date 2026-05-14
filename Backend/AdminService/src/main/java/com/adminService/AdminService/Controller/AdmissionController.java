@@ -34,4 +34,20 @@ public class AdmissionController {
     public Admission getById(@PathVariable Long id) {
         return service.getById(id);
     }
+
+    @GetMapping("/user/{userId}")
+    public Admission getByUserId(@PathVariable Long userId) {
+        return service.getByUserId(userId);
+    }
+
+    @GetMapping("/trainer/{trainerId}")
+    public List<Admission> getByTrainer(@PathVariable Long trainerId) {
+        return service.getByTrainerId(trainerId);
+    }
+
+    @PutMapping("/{id}")
+    public Admission update(@PathVariable Long id, @RequestBody Admission admission) {
+        return service.update(id, admission);
+    }
+
 }

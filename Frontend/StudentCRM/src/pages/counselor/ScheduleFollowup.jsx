@@ -66,7 +66,7 @@ function ScheduleFollowup() {
     // ✅ Update enquiry status to "Follow-up"
     if (success) {
       await updateEnquiry(enquiryId, {
-        status: 'Follow-up'
+        stage: 'Follow-up'
       })
 
       // ✅ Refresh enquiries so MyEnquiries shows the updated status
@@ -89,7 +89,7 @@ function ScheduleFollowup() {
 
     // ✅ Update enquiry status to "Closed"
     await updateEnquiry(enquiryId, {
-      status: 'Closed'
+      stage: 'Closed'
     })
 
     // ✅ Refresh enquiries so MyEnquiries reflects closed status

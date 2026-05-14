@@ -16,6 +16,7 @@ public class Course {
     private String duration;
     private String mode;
     private String status;
+    private Double fees;
     private LocalDate createdDate;
 
     public Course() {}
@@ -37,6 +38,9 @@ public class Course {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    
+    public Double getFees() { return fees; }
+    public void setFees(Double fees) { this.fees = fees; }
 
     public LocalDate getCreatedDate() { return createdDate; }
     public void setCreatedDate(LocalDate createdDate) { this.createdDate = createdDate; }

@@ -34,6 +34,7 @@ public class CourseService {
         existing.setDuration(updated.getDuration());
         existing.setMode(updated.getMode());
         existing.setStatus(updated.getStatus());
+        existing.setFees(updated.getFees());
         return repo.save(existing);
     }
 

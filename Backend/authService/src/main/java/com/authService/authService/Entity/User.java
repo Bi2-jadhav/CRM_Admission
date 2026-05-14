@@ -17,7 +17,7 @@ public class User {
 
     private String password;
 
-    private String role; // ADMIN, COUNSELOR
+    private String role; // ADMIN, COUNSELOR, TRAINER, STUDENT
 
     private String phone;
 

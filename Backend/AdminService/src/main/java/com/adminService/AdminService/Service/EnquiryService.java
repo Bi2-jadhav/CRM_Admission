@@ -66,6 +66,9 @@ public class EnquiryService {
         if (updated.getStage() != null)
             existing.setStage(updated.getStage());
 
+        if (updated.getStatus() != null)
+            existing.setStatus(updated.getStatus());
+
         if (updated.getAssignedCounselorId() != null)
             existing.setAssignedCounselorId(updated.getAssignedCounselorId());
 
@@ -74,5 +77,10 @@ public class EnquiryService {
 
     public void delete(Long id) {
         repo.deleteById(id);
+    }
+
+    public Enquiry getByUserId(Long userId) {
+        return repo.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Enquiry not found for userId: " + userId));
     }
 }
